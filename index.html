@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jedi (codename) — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Jedi prototype — single-file, dependency-free (fonts optional).
+   Styled to jedi-design/identity.md. Placeholder app name: "Jedi".
+   Checkpoint 1: shell + 3 hero screens (Connect, Search, Results).
+   ============================================================ */
+:root{
+  --primary:#6C4DF6; --primary-dark:#5436D6; --primary-tint:#F1ECFE;
+  --savings:#10B981; --savings-tint:#E7F9F2;
+  --warn:#F59E0B; --warn-tint:#FEF3E2; --danger:#EF4444;
+  --ink:#1A1726; --muted:#6B6880;
+  --bg:#FBFAFC; --card:#FFFFFF; --border:#ECEAF3;
+  --grad:linear-gradient(135deg,#7C5CFF 0%,#5436D6 100%);
+  --shadow-card:0 2px 8px rgba(76,61,120,.06);
+  --shadow-raised:0 12px 32px rgba(40,30,90,.18);
+  --font:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+.dark .phone{
+  --ink:#F4F3F8; --muted:#9D9AB3; --bg:#100E1A; --card:#1B1827; --border:#2A2740;
+  --primary:#8B73FF; --primary-tint:#241E3D; --savings-tint:#10271F; --warn-tint:#2A2110;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:var(--font); color:var(--ink);
+  background:#E9E7F0;
+  background-image:radial-gradient(1200px 600px at 50% -10%, #efeafc 0%, #E9E7F0 60%);
+  display:flex; flex-direction:column; align-items:center; min-height:100%;
+}
+
+/* ---------- top toolbar (outside the phone) ---------- */
+.toolbar{
+  width:100%; display:flex; gap:10px; align-items:center; justify-content:center;
+  padding:14px 16px; flex-wrap:wrap;
+}
+.toolbar .brand{font-weight:800; letter-spacing:-.2px; margin-right:6px; color:#2c2542}
+.toolbar .brand small{font-weight:600; color:#7a7490}
+.tbtn{
+  border:1px solid #d8d4e6; background:#fff; color:#3a3454; font-family:var(--font);
+  font-weight:600; font-size:13px; padding:8px 12px; border-radius:10px; cursor:pointer;
+}
+.tbtn:hover{border-color:var(--primary); color:var(--primary)}
+.tbtn.primary{background:var(--primary); color:#fff; border-color:var(--primary)}
+select.tbtn{padding-right:8px}
+
+/* ---------- phone frame ---------- */
+.stage{padding:8px 16px 40px}
+.phone{
+  position:relative; width:390px; height:844px; background:var(--bg); color:var(--ink);
+  border-radius:46px; border:11px solid #15131f; overflow:hidden;
+  box-shadow:0 30px 70px rgba(30,20,70,.35);
+  display:flex; flex-direction:column;
+}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#15131f;border-radius:0 0 18px 18px;z-index:40}
+.statusbar{
+  height:46px; display:flex; align-items:flex-end; justify-content:space-between;
+  padding:0 26px 6px; font-size:13px; font-weight:700; color:var(--ink); flex:0 0 auto;
+}
+.statusbar .dots{display:flex; gap:6px; align-items:center}
+.screen{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{width:0}
+
+/* ---------- generic UI ---------- */
+.pad{padding:8px 20px 24px}
+.h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin:6px 0 4px}
+.sub{color:var(--muted);font-size:14.5px;line-height:1.45;margin:0 0 16px}
+.label{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-card)}
+.row{display:flex;align-items:center;gap:12px}
+.spacer{flex:1}
+.btn{
+  font-family:var(--font);font-weight:700;font-size:16px;border:none;cursor:pointer;
+  border-radius:999px;padding:15px 20px;width:100%;color:#fff;background:var(--grad);
+  box-shadow:0 8px 20px rgba(84,54,214,.28); transition:transform .12s ease, filter .12s ease;
+}
+.btn:active{transform:translateY(1px) scale(.995)}
+.btn[disabled]{filter:grayscale(.5) opacity(.5);cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:var(--card);color:var(--ink);border:1px solid var(--border);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--primary);box-shadow:none}
+.btn.danger{background:var(--danger);box-shadow:none}
+.btn.sm{font-size:14px;padding:10px 16px;width:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--ink);cursor:pointer}
+.chip.tint{background:var(--primary-tint);border-color:transparent;color:var(--primary)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.3px;padding:4px 8px;border-radius:8px}
+.badge.best{background:var(--savings-tint);color:var(--savings)}
+.badge.surge{background:var(--warn-tint);color:#B45309}
+.badge.fail{background:#FDECEC;color:var(--danger)}
+.dark .badge.fail{background:#3a1d20}
+.icon{width:22px;height:22px;flex:0 0 auto;display:inline-flex}
+.appicon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex:0 0 auto}
+.divider{height:1px;background:var(--border);margin:0 20px}
+.field{display:flex;align-items:center;gap:12px;padding:16px;border-radius:12px;background:var(--bg);border:1px solid var(--border);cursor:pointer}
+.field .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.field input{border:none;background:transparent;font-family:var(--font);font-size:16px;font-weight:600;color:var(--ink);width:100%;outline:none}
+.field input::placeholder{color:#9b97ad;font-weight:500}
+.trust{display:flex;gap:10px;align-items:flex-start;background:var(--savings-tint);border-radius:12px;padding:12px 14px;color:#0c7a5b;font-size:13px;font-weight:600;line-height:1.4}
+.dark .trust{color:#5fe3b8}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.pop{animation:pop .3s ease}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* ---------- tab bar ---------- */
+.tabbar{flex:0 0 auto;display:flex;background:var(--card);border-top:1px solid var(--border);padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border:none;background:none;font-family:var(--font);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer}
+.tab.active{color:var(--primary)}
+.tab .icon{width:22px;height:22px}
+
+/* ---------- modal layer (inside phone) ---------- */
+.modal-root{position:absolute;inset:0;z-index:60;pointer-events:none}
+.backdrop{position:absolute;inset:0;background:rgba(20,14,40,.42);opacity:0;transition:opacity .2s;pointer-events:auto}
+.backdrop.show{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:10px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:var(--shadow-raised);transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);pointer-events:auto;max-height:90%;overflow-y:auto}
+.sheet.show{transform:translateY(0)}
+.grabber{width:42px;height:5px;border-radius:3px;background:var(--border);margin:6px auto 14px}
+.dialog-wrap{position:absolute;inset:0;display:grid;place-items:center;padding:28px;pointer-events:none}
+.dialog{width:100%;max-width:300px;background:var(--card);border-radius:18px;padding:22px 20px 16px;box-shadow:var(--shadow-raised);transform:scale(.9);opacity:0;transition:all .18s;pointer-events:auto}
+.dialog.show{transform:scale(1);opacity:1}
+.dialog.system{border-radius:14px;border:1px solid var(--border)}
+.dialog h3{margin:0 0 8px;font-size:18px;font-weight:800}
+.dialog p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+.dialog .actions{display:flex;flex-direction:column;gap:8px}
+.dialog .actions.horiz{flex-direction:row}
+.dialog .actions.horiz .btn{flex:1}
+
+/* checklist (connect sub-flow) */
+.step{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step .mark{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:800;font-size:14px}
+.mark.ok{background:var(--savings-tint);color:var(--savings)}
+.mark.pending{background:var(--primary-tint);color:var(--primary)}
+.mark.bad{background:#FDECEC;color:var(--danger)}
+.dark .mark.bad{background:#3a1d20}
+.step .t{font-weight:700;font-size:15px}
+.step .d{color:var(--muted);font-size:12.5px}
+
+/* toast */
+.toasts{position:absolute;left:16px;right:16px;bottom:96px;z-index:70;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:#26203b;color:#fff;font-weight:600;font-size:14px;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow-raised);max-width:100%;transform:translateY(10px);opacity:0;transition:all .22s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.good{background:#0c7a5b}
+.toast.bad{background:#b3261e}
+
+/* results */
+.result{display:flex;align-items:center;gap:14px;padding:16px;cursor:pointer}
+.result:active{background:var(--bg)}
+.price{font-weight:800;font-size:22px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.banner{display:flex;gap:10px;align-items:center;background:var(--savings-tint);color:#0c7a5b;border-radius:14px;padding:14px 16px;font-weight:700}
+.dark .banner{color:#5fe3b8}
+.comparing{display:flex;align-items:center;gap:12px;padding:16px}
+.spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--primary);animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* map overlay */
+.map{position:fixed;inset:0;background:rgba(16,12,30,.55);z-index:200;display:none;padding:30px;overflow:auto}
+.map.show{display:block}
+.map-inner{max-width:760px;margin:0 auto;background:#fff;border-radius:18px;padding:24px 26px}
+.map h2{margin:0 0 4px}
+.map .muted{color:#6B6880;font-size:14px;margin:0 0 18px}
+.map .grp{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#8a85a0;margin:18px 0 8px}
+.map .node{display:inline-block;margin:4px 6px 4px 0;padding:8px 13px;border-radius:10px;border:1px solid #e5e2ef;font-weight:600;font-size:13.5px;color:#3a3454;background:#faf9fd}
+.map .node.live{border-color:var(--primary);color:var(--primary);background:var(--primary-tint);cursor:pointer}
+.map .node.todo{opacity:.55}
+.placeholder{padding:60px 24px;text-align:center;color:var(--muted)}
+.placeholder .appicon{margin:0 auto 16px;width:56px;height:56px}
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <span class="brand">Jedi <small>· interactive prototype</small></span>
+    <select class="tbtn" id="jump" title="Jump to screen"></select>
+    <button class="tbtn" data-tool="map">🗺 Flow map</button>
+    <button class="tbtn" data-tool="dark">🌙 Dark</button>
+    <button class="tbtn" data-tool="reset">↺ Reset</button>
+  </div>
+
+  <div class="stage">
+    <div class="phone" id="phone">
+      <div class="notch"></div>
+      <div class="statusbar">
+        <span id="clock">9:41</span>
+        <span class="dots">●●● &nbsp; 􀙇 &nbsp; 100%</span>
+      </div>
+      <div class="screen" id="screen"></div>
+      <div class="tabbar" id="tabbar"></div>
+      <div class="toasts" id="toasts"></div>
+      <div class="modal-root" id="modal-root"></div>
+    </div>
+  </div>
+
+  <!-- Flow map overlay -->
+  <div class="map" id="map">
+    <div class="map-inner">
+      <div class="row"><h2 style="flex:1">Jedi — full screen inventory</h2><button class="tbtn" data-tool="map">✕ Close</button></div>
+      <p class="muted">Live screens are tappable. The rest arrive in Checkpoint 2–3 (full Mermaid flow map ships as <code>flow-map.md</code>).</p>
+      <div id="map-body"></div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================================
+   State
+   ========================================================================= */
+const state = {
+  dark:false,
+  connected:new Set(),         // 'uber' | 'lyft'
+  from:'Current location',
+  to:'',
+  screen:'connect',
+  resultsPhase:'loading',
+};
+const PROVIDERS = {
+  uber:{name:'Uber', color:'#000000', initial:'U', installed:true,  loggedIn:true},
+  lyft:{name:'Lyft', color:'#FF00BF', initial:'L', installed:false, loggedIn:false},
+};
+
+/* =========================================================================
+   Tiny element helper
+   ========================================================================= */
+function el(tag, attrs={}, ...kids){
+  const n=document.createElement(tag);
+  for(const k in attrs){
+    if(k==='class') n.className=attrs[k];
+    else if(k==='html') n.innerHTML=attrs[k];
+    else if(k.startsWith('on')&&typeof attrs[k]==='function') n.addEventListener(k.slice(2),attrs[k]);
+    else n.setAttribute(k,attrs[k]);
+  }
+  kids.flat().forEach(c=>n.appendChild(typeof c==='string'?document.createTextNode(c):c));
+  return n;
+}
+
+/* =========================================================================
+   Modal primitives: toast / alert dialog / bottom sheet
+   ========================================================================= */
+const modalRoot=()=>document.getElementById('modal-root');
+
+function toast(msg,kind=''){
+  const t=el('div',{class:'toast '+kind},msg);
+  document.getElementById('toasts').appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),250);},2200);
+}
+
+function closeModal(wrap){
+  const back=wrap.querySelector('.backdrop'); if(back) back.classList.remove('show');
+  const panel=wrap.querySelector('.sheet,.dialog'); if(panel) panel.classList.remove('show');
+  setTimeout(()=>wrap.remove(),240);   // remove the modal wrap only — never its parent (#phone)
+}
+
+/* showAlert({title, body, system, actions:[{label,kind,close,onClick}]}) */
+function showAlert(opt){
+  const wrap=el('div',{class:'modal-root'});
+  const back=el('div',{class:'backdrop'});
+  const host=el('div',{class:'dialog-wrap'});
+  const horiz=opt.actions && opt.actions.length===2;
+  const dlg=el('div',{class:'dialog'+(opt.system?' system':'')});
+  dlg.appendChild(el('h3',{},opt.title||''));
+  if(opt.body) dlg.appendChild(el('p',{html:opt.body}));
+  const acts=el('div',{class:'actions'+(horiz?' horiz':'')});
+  (opt.actions||[{label:'OK',kind:'primary'}]).forEach(a=>{
+    const b=el('button',{class:'btn '+(a.kind==='primary'?'':(a.kind||'secondary'))+' sm',style:'width:100%'},a.label);
+    b.addEventListener('click',()=>{ if(a.close!==false) closeModal(wrap); if(a.onClick) a.onClick(); });
+    acts.appendChild(b);
+  });
+  dlg.appendChild(acts); host.appendChild(dlg);
+  wrap.appendChild(back); wrap.appendChild(host);
+  document.getElementById('phone').appendChild(wrap);
+  requestAnimationFrame(()=>{back.classList.add('show');dlg.classList.add('show');});
+  return wrap;
+}
+
+/* showSheet({title, build:(sheetEl,close)=>{...}}) */
+function showSheet(opt){
+  const wrap=el('div',{class:'modal-root'});
+  const back=el('div',{class:'backdrop'});
+  const sheet=el('div',{class:'sheet'});
+  sheet.appendChild(el('div',{class:'grabber'}));
+  if(opt.title) sheet.appendChild(el('div',{class:'h1',style:'font-size:20px;margin:0 0 12px'},opt.title));
+  const close=()=>closeModal(wrap);
+  back.addEventListener('click',close);
+  if(opt.build) opt.build(sheet,close);
+  wrap.appendChild(back); wrap.appendChild(sheet);
+  document.getElementById('phone').appendChild(wrap);
+  requestAnimationFrame(()=>{back.classList.add('show');sheet.classList.add('show');});
+  return {wrap,sheet,close};
+}
+
+/* =========================================================================
+   Provider connect sub-flow (the accessibility / permission surface)
+   ========================================================================= */
+function connectFlow(id){
+  const p=PROVIDERS[id];
+  showSheet({title:'Connect '+p.name, build:(sheet,close)=>{
+    const list=el('div',{});
+    function step(mark,markClass,t,d,action){
+      const s=el('div',{class:'step'});
+      s.appendChild(el('div',{class:'mark '+markClass},mark));
+      const tx=el('div',{style:'flex:1'}); tx.appendChild(el('div',{class:'t'},t)); tx.appendChild(el('div',{class:'d'},d));
+      s.appendChild(tx);
+      if(action) s.appendChild(action);
+      return s;
+    }
+    // Step 1 — installed?
+    if(p.installed){
+      list.appendChild(step('✓','ok',p.name+' is installed','Found on your device'));
+    }else{
+      const installBtn=el('button',{class:'btn sm', style:'width:auto'},'Install');
+      installBtn.addEventListener('click',()=>{ toast('Opening App Store…'); });
+      list.appendChild(step('!','bad',p.name+' isn’t installed','Install it, then come back',installBtn));
+    }
+    // Step 2 — logged in?
+    if(p.installed){
+      if(p.loggedIn){
+        list.appendChild(step('✓','ok','You’re logged in to '+p.name,'Using your existing account'));
+      }else{
+        const loginBtn=el('button',{class:'btn sm',style:'width:auto'},'Open '+p.name);
+        loginBtn.addEventListener('click',()=>toast('Opening '+p.name+' to log in…'));
+        list.appendChild(step('→','pending','Log in to '+p.name,'Open the app and sign in',loginBtn));
+      }
+    }
+    // Step 3 — accessibility permission
+    const grantBtn=el('button',{class:'btn sm',style:'width:auto'},'Grant');
+    const permStep=step('3','pending','Allow Jedi to read prices','Needs Accessibility permission',grantBtn);
+    list.appendChild(permStep);
+    sheet.appendChild(list);
+
+    sheet.appendChild(el('div',{class:'trust',style:'margin-top:16px'},
+      el('span',{},'🔒'),
+      el('span',{},'Your login stays on your device. Jedi reads only the prices shown on screen — never your password.')));
+
+    grantBtn.addEventListener('click',()=>{
+      if(!p.installed){ toast('Install '+p.name+' first','bad'); return; }
+      // OS-style disclosure
+      showAlert({
+        system:true,
+        title:'Use Jedi with '+p.name+'?',
+        body:'Jedi will read on-screen prices from '+p.name+' to compare fares. It runs only when you ask for a comparison or during a background price check. <b>It cannot see your password.</b>',
+        actions:[
+          {label:'Deny',kind:'secondary',onClick:()=>{
+            showAlert({title:'Permission needed',
+              body:'Without Accessibility, Jedi can’t read '+p.name+'’s prices. You can turn it on later in Settings.',
+              actions:[{label:'Not now',kind:'secondary'},{label:'Try again',kind:'primary',onClick:()=>{grantBtn.click();}}]});
+          }},
+          {label:'Allow',kind:'primary',onClick:()=>{
+            state.connected.add(id);
+            close();
+            toast(p.name+' connected 🎉','good');
+            renderScreen();
+          }},
+        ]
+      });
+    });
+  }});
+}
+
+/* =========================================================================
+   SCREENS
+   ========================================================================= */
+const screens={};
+
+/* ----- Connect providers (hero) ----- */
+screens.connect={title:'Connect apps',tab:null,back:false,render(){
+  const wrap=el('div',{class:'pad'});
+  wrap.appendChild(el('div',{class:'appicon',style:'background:var(--grad);margin:6px 0 14px'},'J'));
+  wrap.appendChild(el('div',{class:'h1'},'Connect your apps'));
+  wrap.appendChild(el('div',{class:'sub'},'Jedi compares prices using the ride apps you already have. Connect at least one to start.'));
+  wrap.appendChild(el('div',{class:'trust',style:'margin-bottom:16px'},
+    el('span',{},'🔒'),
+    el('span',{},'We never see your passwords. Your accounts stay yours — Jedi just reads the prices.')));
+
+  const card=el('div',{class:'card'});
+  Object.keys(PROVIDERS).forEach((id,i)=>{
+    const p=PROVIDERS[id]; const isOn=state.connected.has(id);
+    const r=el('div',{class:'result',style:'cursor:default'});
+    r.appendChild(el('div',{class:'appicon',style:'background:'+p.color+';width:40px;height:40px;font-size:16px'},p.initial));
+    const mid=el('div',{style:'flex:1'});
+    mid.appendChild(el('div',{style:'font-weight:700;font-size:16px'},p.name));
+    mid.appendChild(el('div',{class:'d',style:'color:var(--muted);font-size:13px'}, isOn?'Connected':(p.installed?'Tap to connect':'Not installed')));
+    r.appendChild(mid);
+    if(isOn){ r.appendChild(el('span',{class:'badge best'},'✓ Connected')); }
+    else{
+      const b=el('button',{class:'btn sm',style:'width:auto'},'Connect');
+      b.addEventListener('click',()=>connectFlow(id));
+      r.appendChild(b);
+    }
+    card.appendChild(r);
+    if(i<Object.keys(PROVIDERS).length-1) card.appendChild(el('div',{class:'divider'}));
+  });
+  wrap.appendChild(card);
+
+  const cont=el('button',{class:'btn',style:'margin-top:22px'}, state.connected.size?'Continue':'Connect an app to continue');
+  if(!state.connected.size) cont.setAttribute('disabled','');
+  cont.addEventListener('click',()=>{ if(state.connected.size) navigate('search'); });
+  wrap.appendChild(cont);
+  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:13px'},'More providers (Uber Eats, DoorDash, Instacart) coming soon.'));
+  return wrap;
+}};
+
+/* ----- Home / Search (hero) ----- */
+screens.search={title:'Search',tab:'search',back:false,render(){
+  const wrap=el('div',{class:'pad'});
+  const top=el('div',{class:'row',style:'margin:4px 0 18px'});
+  top.appendChild(el('div',{},el('div',{class:'label'},'Good morning'),el('div',{style:'font-weight:800;font-size:20px'},'Where to?')));
+  top.appendChild(el('div',{class:'spacer'}));
+  top.appendChild(el('div',{class:'appicon',style:'background:var(--primary-tint);color:var(--primary);width:38px;height:38px;font-size:15px'},'T'));
+  wrap.appendChild(top);
+
+  const card=el('div',{class:'card',style:'padding:8px'});
+  const fromF=el('div',{class:'field',style:'border:none;background:transparent'},
+    el('span',{class:'dot',style:'background:var(--savings)'}),
+    el('input',{value:state.from,placeholder:'From',readonly:'true'}));
+  fromF.addEventListener('click',()=>locationSheet('from'));
+  const toF=el('div',{class:'field',style:'border:none;background:transparent'},
+    el('span',{class:'dot',style:'background:var(--primary)'}),
+    el('input',{value:state.to,placeholder:'Where to?',readonly:'true'}));
+  toF.addEventListener('click',()=>locationSheet('to'));
+  card.appendChild(fromF);
+  card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
+  card.appendChild(toF);
+  wrap.appendChild(card);
+
+  const chips=el('div',{class:'row',style:'gap:8px;margin:16px 0 6px;flex-wrap:wrap'});
+  [['🏠 Home','123 Pine St'],['💼 Work','Salesforce Tower'],['✈️ SFO','SF Airport']].forEach(([lbl,val])=>{
+    const c=el('div',{class:'chip'},lbl);
+    c.addEventListener('click',()=>{state.to=val; renderScreen();});
+    chips.appendChild(c);
+  });
+  wrap.appendChild(el('div',{class:'label',style:'margin-top:4px'},'Saved & recent'));
+  wrap.appendChild(chips);
+
+  const cta=el('button',{class:'btn',style:'margin-top:24px'},'Compare prices');
+  cta.addEventListener('click',()=>{
+    if(!state.to){ toF.classList.add('shake'); setTimeout(()=>toF.classList.remove('shake'),450); toast('Enter a destination first','bad'); return; }
+    if(state.connected.size===0){
+      showAlert({title:'Connect an app first',body:'Jedi needs at least one ride app connected to compare prices.',
+        actions:[{label:'Not now',kind:'secondary'},{label:'Connect',kind:'primary',onClick:()=>navigate('connect')}]});
+      return;
+    }
+    navigate('results');
+  });
+  wrap.appendChild(cta);
+  return wrap;
+}};
+
+function locationSheet(which){
+  showSheet({title:which==='from'?'Set pickup':'Where to?', build:(sheet,close)=>{
+    const inp=el('input',{class:'',placeholder:'Search address or place',style:'width:100%;font-family:var(--font);font-size:16px;font-weight:600;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--ink);outline:none'});
+    sheet.appendChild(inp);
+    const opts=which==='from'
+      ? [['📍','Current location','GPS'],['🏠','Home','123 Pine St'],['💼','Work','Salesforce Tower']]
+      : [['🏠','Home','123 Pine St'],['💼','Work','Salesforce Tower'],['✈️','SFO Airport','International Terminal'],['☕','Blue Bottle','66 Mint St']];
+    const listWrap=el('div',{style:'margin-top:8px'});
+    opts.forEach(([ic,t,d])=>{
+      const r=el('div',{class:'result',style:'padding:14px 4px'});
+      r.appendChild(el('div',{class:'appicon',style:'background:var(--primary-tint);color:var(--primary);width:38px;height:38px;font-size:16px'},ic));
+      const m=el('div',{style:'flex:1'}); m.appendChild(el('div',{style:'font-weight:700'},t)); m.appendChild(el('div',{style:'color:var(--muted);font-size:13px'},d));
+      r.appendChild(m);
+      r.addEventListener('click',()=>{ state[which]= t==='Current location'?'Current location':t; close(); renderScreen(); });
+      listWrap.appendChild(r);
+    });
+    sheet.appendChild(listWrap);
+    setTimeout(()=>inp.focus(),80);
+  }});
+}
+
+/* ----- Results / compare (hero) ----- */
+screens.results={title:'Results',tab:'search',back:true,render(){
+  const wrap=el('div',{class:'pad'});
+  // trip header
+  wrap.appendChild(el('div',{class:'label'},'Comparing'));
+  wrap.appendChild(el('div',{style:'font-weight:800;font-size:18px;margin:2px 0 16px'}, (state.from||'Pickup')+'  →  '+(state.to||'Destination')));
+
+  if(state.resultsPhase==='loading'){
+    const box=el('div',{class:'card'});
+    ['Uber','Lyft'].forEach((n,i)=>{
+      box.appendChild(el('div',{class:'comparing'+(i?'':'')},
+        el('div',{class:'spinner'}),
+        el('div',{style:'font-weight:600'},'Checking '+n+'…')));
+      if(i===0) box.appendChild(el('div',{class:'divider'}));
+    });
+    wrap.appendChild(box);
+    wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:16px'},'Jedi is reading live prices from your apps…'));
+    return wrap;
+  }
+
+  // loaded
+  wrap.appendChild(el('div',{class:'banner pop'},
+    el('span',{style:'font-size:20px'},'💸'),
+    el('span',{},'Cheapest is UberX — you save $9.60 vs the priciest option')));
+
+  const data=[
+    {prov:'uber',type:'UberX',price:'$18.40',eta:'4 min away',best:true},
+    {prov:'lyft',type:'Lyft',price:'$19.10',eta:'3 min away'},
+    {prov:'uber',type:'Uber Comfort',price:'$24.70',eta:'6 min away',surge:'1.4×'},
+    {prov:'lyft',type:'Lyft XL',price:'$28.00',eta:'5 min away'},
+  ];
+  const card=el('div',{class:'card',style:'margin-top:16px'});
+  data.forEach((d,i)=>{
+    const p=PROVIDERS[d.prov];
+    const r=el('div',{class:'result'});
+    r.appendChild(el('div',{class:'appicon',style:'background:'+p.color+';width:40px;height:40px;font-size:15px'},p.initial));
+    const mid=el('div',{style:'flex:1;min-width:0'});
+    const titleRow=el('div',{class:'row',style:'gap:8px'}); titleRow.appendChild(el('span',{style:'font-weight:700;font-size:15px'},d.type));
+    if(d.best) titleRow.appendChild(el('span',{class:'badge best'},'BEST VALUE'));
+    if(d.surge) titleRow.appendChild(el('span',{class:'badge surge'},'⚡ '+d.surge+' surge'));
+    mid.appendChild(titleRow);
+    mid.appendChild(el('div',{style:'color:var(--muted);font-size:13px;margin-top:2px'},d.eta));
+    r.appendChild(mid);
+    r.appendChild(el('div',{class:'price'+(d.best?'':''),style:d.best?'color:var(--savings)':''},d.price));
+    r.addEventListener('click',()=>rideDetail(d));
+    card.appendChild(r);
+    card.appendChild(el('div',{class:'divider'}));
+  });
+  // failure row (per-provider scrape fail branch)
+  const failR=el('div',{class:'result',style:'cursor:default'});
+  failR.appendChild(el('div',{class:'appicon',style:'background:#FF00BF;width:40px;height:40px;font-size:15px;opacity:.5'},'L'));
+  const fm=el('div',{style:'flex:1'}); fm.appendChild(el('div',{class:'row',style:'gap:8px'},el('span',{style:'font-weight:700;font-size:15px'},'Lyft Lux'),el('span',{class:'badge fail'},'COULDN’T FETCH')));
+  fm.appendChild(el('div',{style:'color:var(--muted);font-size:13px'},'Price unavailable right now'));
+  failR.appendChild(fm);
+  const retry=el('button',{class:'btn sm secondary',style:'width:auto'},'Retry');
+  retry.addEventListener('click',()=>toast('Retrying Lyft Lux…'));
+  failR.appendChild(retry);
+  card.appendChild(failR);
+  wrap.appendChild(card);
+
+  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:12.5px'},'Prices read live from your apps moments ago. Tap one to book.'));
+  return wrap;
+}};
+
+function rideDetail(d){
+  const p=PROVIDERS[d.prov];
+  showSheet({build:(sheet,close)=>{
+    sheet.appendChild(el('div',{class:'row',style:'gap:14px;margin-bottom:6px'},
+      el('div',{class:'appicon',style:'background:'+p.color},p.initial),
+      el('div',{},el('div',{style:'font-weight:800;font-size:18px'},d.type),el('div',{style:'color:var(--muted);font-size:13px'},p.name+' · '+d.eta))));
+    sheet.appendChild(el('div',{class:'row',style:'margin:14px 0'},
+      el('div',{class:'price',style:'font-size:30px'+(d.best?';color:var(--savings)':'')},d.price),
+      el('div',{class:'spacer'}),
+      d.best?el('span',{class:'badge best'},'BEST VALUE'):el('span',{})));
+    if(d.surge) sheet.appendChild(el('div',{class:'banner',style:'background:var(--warn-tint);color:#B45309;margin-bottom:14px'},el('span',{},'⚡'),el('span',{},'Surge pricing is active ('+d.surge+'). Price may change in '+p.name+'.')));
+    sheet.appendChild(el('div',{class:'sub',style:'font-size:13px'},'Jedi opens '+p.name+' with this trip pre-filled. You confirm and pay in '+p.name+' as usual.'));
+
+    const book=el('button',{class:'btn'},'Book on '+p.name+'  →');
+    book.addEventListener('click',()=>{
+      if(!p.installed){ // deeplink fallback branch
+        close();
+        showAlert({title:p.name+' isn’t installed',body:'Open this trip in your browser instead?',
+          actions:[{label:'Cancel',kind:'secondary'},{label:'Open web',kind:'primary',onClick:()=>toast('Opening '+p.name+' on the web…')}]});
+        return;
+      }
+      close();
+      showAlert({title:'Opening '+p.name+'…',body:'Handing you off to '+p.name+' with the '+d.type+' trip pre-filled.',
+        actions:[{label:'Got it',kind:'primary',onClick:()=>toast('Handed off to '+p.name+' ✓','good')}]});
+    });
+    sheet.appendChild(book);
+  }});
+}
+
+/* ----- placeholders for not-yet-built tabs ----- */
+function placeholder(title,note){
+  return {title,tab:title.toLowerCase(),back:false,render(){
+    const w=el('div',{class:'placeholder'});
+    w.appendChild(el('div',{class:'appicon',style:'background:var(--primary-tint);color:var(--primary)'},'⏳'));
+    w.appendChild(el('div',{class:'h1',style:'font-size:20px'},title));
+    w.appendChild(el('div',{class:'sub'},note));
+    return w;
+  }};
+}
+screens.earn=placeholder('Earn','Points wallet, background earner & boosts — building in Checkpoint 2.');
+screens.account=placeholder('Account','Profile, connected apps & settings — building in Checkpoint 2.');
+
+/* =========================================================================
+   Router + chrome
+   ========================================================================= */
+const TABS=[
+  {id:'search',label:'Search',icon:'🔍'},
+  {id:'earn',label:'Earn',icon:'✨'},
+  {id:'account',label:'Account',icon:'👤'},
+];
+function renderTabbar(){
+  const bar=document.getElementById('tabbar');
+  const activeTab=screens[state.screen].tab;
+  if(!activeTab){ bar.style.display='none'; return; }
+  bar.style.display='flex'; bar.innerHTML='';
+  TABS.forEach(t=>{
+    const b=el('button',{class:'tab'+(t.id===activeTab?' active':'')},
+      el('span',{class:'icon',style:'font-size:20px'},t.icon), t.label);
+    b.addEventListener('click',()=>navigate(t.id==='search'?'search':t.id));
+    bar.appendChild(b);
+  });
+}
+function renderScreen(){
+  const s=screens[state.screen];
+  const scr=document.getElementById('screen');
+  scr.innerHTML=''; scr.scrollTop=0;
+  scr.appendChild(s.render());
+  renderTabbar();
+  document.getElementById('jump').value=state.screen;
+}
+function navigate(id){
+  if(!screens[id]) return;
+  state.screen=id;
+  if(id==='results'){ // simulate live scraping then results
+    state.resultsPhase='loading'; renderScreen();
+    setTimeout(()=>{ if(state.screen==='results'){ state.resultsPhase='loaded'; renderScreen(); } },1300);
+    return;
+  }
+  renderScreen();
+}
+
+/* jump menu */
+const JUMP=[['connect','① Connect apps'],['search','② Home / Search'],['results','③ Results / compare'],['earn','— Earn (Checkpoint 2)'],['account','— Account (Checkpoint 2)']];
+const jump=document.getElementById('jump');
+JUMP.forEach(([v,l])=>jump.appendChild(el('option',{value:v},l)));
+jump.addEventListener('change',e=>navigate(e.target.value));
+
+/* toolbar tools */
+document.querySelector('.toolbar').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tool]'); if(!b) return;
+  const t=b.dataset.tool;
+  if(t==='dark'){ state.dark=!state.dark; document.body.classList.toggle('dark',state.dark); b.textContent=state.dark?'☀️ Light':'🌙 Dark'; }
+  if(t==='reset'){ state.connected.clear(); state.to=''; state.from='Current location'; navigate('connect'); toast('Prototype reset'); }
+  if(t==='map'){ document.getElementById('map').classList.toggle('show'); }
+});
+document.getElementById('map').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tool="map"]'); if(b){ document.getElementById('map').classList.remove('show'); }
+});
+
+/* build flow-map overlay body */
+const MAP=[
+  ['A · Onboarding & Auth',[['Splash + version gate',0],['Value-prop intro',0],['Google sign-in',0]]],
+  ['B · Connect & permissions',[['How Jedi works',0],['Privacy & terms',0],['Connect apps',1,'connect'],['Permission disclosure',1,'connect'],['Notifications opt-in',0],['Setup complete',0]]],
+  ['C · Compare flow',[['Home / Search',1,'search'],['Location autocomplete',1,'search'],['Comparing…',1,'results'],['Results compare',1,'results'],['Ride detail',1,'results'],['Book hand-off',1,'results']]],
+  ['D · Earner / points',[['Points wallet',0],['Background earner',0],['Boost nudge',0],['Redeem',0]]],
+  ['E · Account / system',[['Profile',0],['Connected apps',0],['Settings',0],['Notifications',0],['Help / legal',0]]],
+  ['F · Global alerts',[['Offline',0],['Session expired',0],['Login expired',0],['Accessibility revoked',0],['Force update',0],['Surge warning',1,'results'],['Deeplink fallback',1,'results']]],
+];
+const mapBody=document.getElementById('map-body');
+MAP.forEach(([grp,nodes])=>{
+  mapBody.appendChild(el('div',{class:'grp'},grp));
+  const row=el('div',{});
+  nodes.forEach(([name,live,target])=>{
+    const n=el('div',{class:'node '+(live?'live':'todo')},name);
+    if(live&&target) n.addEventListener('click',()=>{document.getElementById('map').classList.remove('show');navigate(target);});
+    row.appendChild(n);
+  });
+  mapBody.appendChild(row);
+});
+
+/* live clock */
+function tick(){ const d=new Date(); document.getElementById('clock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+setInterval(tick,10000); tick();
+
+/* boot */
+navigate('connect');
+</script>
+</body>
+</html>
