@@ -175,6 +175,20 @@ select.tbtn{padding-right:8px}
 .toast.good{background:#0c7a5b} .toast.good .ic{color:#9af0d2}
 .toast.bad{background:#b3261e} .toast.bad .ic{color:#ffc9c4}
 
+/* CP2 components */
+.tg{width:46px; height:28px; border-radius:999px; border:none; background:var(--border); position:relative; cursor:pointer; flex:0 0 auto; transition:background .18s}
+.tg.on{background:var(--savings)}
+.tg .knob{position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.22); transition:left .18s}
+.tg.on .knob{left:21px}
+.cbx{width:22px; height:22px; border-radius:6px; border:2px solid var(--border); display:grid; place-items:center; flex:0 0 auto; color:transparent}
+.cbx.on{background:var(--violet); border-color:var(--violet); color:#fff}
+.gbanner{display:flex; align-items:center; gap:9px; padding:9px 16px; font-size:13px; font-weight:600; background:var(--danger); color:#fff; flex:0 0 auto}
+.gbanner .ic{color:#fff}
+.stat{font-size:38px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1.05; margin-top:2px}
+.avatar{width:56px; height:56px; border-radius:50%; background:var(--violet); color:#fff; display:grid; place-items:center; font-weight:700; font-size:21px; flex:0 0 auto}
+.intro-row{display:flex; gap:14px; align-items:flex-start; padding:13px 0}
+.intro-row .ic{color:var(--violet); margin-top:2px}
+
 /* map overlay */
 .map{position:fixed; inset:0; background:rgba(14,11,28,.55); z-index:200; display:none; padding:30px; overflow:auto}
 .map.show{display:block}
@@ -191,6 +205,7 @@ select.tbtn{padding-right:8px}
     <span class="brand"><span id="brandmark"></span> Jedi <small>· interactive prototype</small></span>
     <select class="tbtn" id="jump" title="Jump to screen"></select>
     <button class="tbtn" data-tool="map">Flow map</button>
+    <button class="tbtn" data-tool="alerts">Alerts</button>
     <button class="tbtn" data-tool="dark">Dark</button>
     <button class="tbtn" data-tool="reset">Reset</button>
   </div>
@@ -298,7 +313,8 @@ const state={
   connected:{rides:new Set(), grocery:new Set()},
   from:'Current location', to:'',
   basket:DEFAULT_BASKET.map(x=>({...x})),
-  resultsPhase:'loading', screen:'connect',
+  resultsPhase:'loading', screen:'splash',
+  signedIn:false, points:1240, earnerActive:true, offline:false,
 };
 
 /* ============================ el helper ============================ */
@@ -601,9 +617,168 @@ function storeDetail(s){
 }
 
 /* placeholders */
-function placeholder(title,note){ return {tab:title.toLowerCase(),back:false,render(){ const w=el('div',{class:'empty'}); w.appendChild(icon(title==='Earn'?'bolt':'user',40)); w.appendChild(el('div',{class:'h'},title)); w.appendChild(el('div',{class:'sub'},note)); return w; }}; }
-screens.earn=placeholder('Earn','Points wallet, background earner & boosts — building in Checkpoint 2.');
-screens.account=placeholder('Account','Profile, connected apps & settings — building in Checkpoint 2.');
+/* ---------- CP2 helpers ---------- */
+function toggleSwitch(on,onChange){ const t=el('button',{class:'tg'+(on?' on':'')}); t.appendChild(el('span',{class:'knob'})); t.addEventListener('click',()=>onChange(!on)); return t; }
+function menuRow(ic,label,opts={}){ const r=el('div',{class:'lrow',style:'cursor:pointer'}); r.appendChild(icon(ic,21,'color:'+(opts.danger?'var(--danger)':'var(--muted)'))); r.appendChild(el('div',{style:'flex:1'}, el('div',{class:'nm',style:opts.danger?'color:var(--danger)':''},label), opts.sub?el('div',{class:'ds'},opts.sub):false)); if(opts.badge) r.appendChild(el('span',{class:'badge accent'},opts.badge)); if(opts.control) r.appendChild(opts.control); else if(!opts.danger&&!opts.noChev) r.appendChild(icon('chevron',18,'color:var(--muted)')); if(opts.onClick) r.addEventListener('click',opts.onClick); return r; }
+
+/* ---------- onboarding / auth ---------- */
+screens.splash={tab:null,back:false,render(){
+  const w=el('div',{style:'height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--btn-bg);color:var(--btn-fg)'});
+  w.appendChild(el('div',{class:'plogo',style:'width:84px;height:84px;border-radius:24px;background:var(--violet);color:#fff'}, icon('trendDown',44)));
+  w.appendChild(el('div',{style:'font-size:30px;font-weight:800;letter-spacing:-.03em'},'Jedi'));
+  w.appendChild(el('div',{style:'opacity:.55;font-size:14px'},'Always the lowest price'));
+  return w;
+}};
+screens.intro={tab:null,back:false,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'plogo',style:'width:54px;height:54px;border-radius:16px;background:var(--violet);color:#fff;margin:16px 0 16px'}, icon('trendDown',28)));
+  w.appendChild(el('div',{class:'h1',style:'font-size:26px;line-height:1.2'},'Compare every app. Always pay less.'));
+  w.appendChild(el('div',{class:'sub'},'Jedi checks the apps you already have and shows the cheapest option in one tap — for rides, groceries and more.'));
+  [['search','One place to compare','Uber, Lyft, Instacart, Walmart and more — side by side.'],['bolt','Earn while you save','Get points whenever Jedi runs a price check in the background.'],['shield','Private by design','Your logins never leave your device. Jedi only reads prices.']].forEach(([ic,t,d])=>{ w.appendChild(el('div',{class:'intro-row'}, icon(ic,24), el('div',{}, el('div',{style:'font-weight:700;font-size:15.5px'},t), el('div',{class:'ds',style:'margin-top:2px'},d)))); });
+  const cta=el('button',{class:'btn',style:'margin-top:20px'},'Get started'); cta.addEventListener('click',()=>navigate('signin')); w.appendChild(cta);
+  const si=el('button',{class:'btn ghost',style:'margin-top:4px'},'I already have an account'); si.addEventListener('click',()=>navigate('signin')); w.appendChild(si);
+  return w;
+}};
+screens.signin={tab:null,back:true,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'plogo',style:'width:54px;height:54px;border-radius:16px;background:var(--violet);color:#fff;margin:24px auto 14px'}, icon('trendDown',28)));
+  w.appendChild(el('div',{class:'h1',style:'text-align:center'},'Sign in to Jedi'));
+  w.appendChild(el('div',{class:'sub',style:'text-align:center'},'Use your Google account — about ten seconds.'));
+  const terms=el('div',{class:'row',style:'gap:11px;margin:6px 2px 16px;cursor:pointer'});
+  const cbx=el('div',{class:'cbx'}, icon('check',15)); terms.appendChild(cbx);
+  terms.appendChild(el('div',{class:'ds',style:'font-size:12.5px'},'I agree to the Terms of Service and Privacy Policy.'));
+  let agreed=false;
+  const g=el('button',{class:'btn',style:'margin-bottom:10px;gap:10px'}, el('span',{class:'plogo',style:'width:20px;height:20px;background:#fff;border-radius:4px;color:#4285F4;font-weight:800;font-size:13px'},'G'), 'Continue with Google');
+  g.setAttribute('disabled','');
+  terms.addEventListener('click',()=>{ agreed=!agreed; cbx.classList.toggle('on',agreed); agreed?g.removeAttribute('disabled'):g.setAttribute('disabled',''); });
+  w.appendChild(terms);
+  g.addEventListener('click',()=>{ if(agreed) googleSheet(); }); w.appendChild(g);
+  const e=el('button',{class:'btn secondary'},'Continue with email'); e.addEventListener('click',()=>{ if(!agreed){ toast('Please accept the terms first','bad'); return; } toast('Email sign-in (stub)'); }); w.appendChild(e);
+  return w;
+}};
+function googleSheet(){
+  showSheet({title:'Choose an account', build:(sheet,close)=>{
+    sheet.appendChild(el('div',{class:'ds',style:'margin:-8px 0 10px'},'to continue to Jedi'));
+    [['T','Tosh Kothari','tosh.kothari@gmail.com',false],['','Add another account','',true]].forEach(([ini,nm,em,add])=>{
+      const r=el('div',{class:'lrow',style:'padding:12px 0;cursor:pointer'});
+      r.appendChild(el('div',{class:'avatar',style:'width:40px;height:40px;font-size:15px;border-radius:50%;background:'+(add?'var(--track)':'var(--violet)')+';color:'+(add?'var(--muted)':'#fff')}, add?icon('plus',20):ini));
+      r.appendChild(el('div',{style:'flex:1'}, el('div',{class:'nm'},nm), em?el('div',{class:'ds'},em):false));
+      r.addEventListener('click',()=>{ if(add){ toast('Add account (stub)'); return; } close(); state.signedIn=true; toast('Signed in as Tosh','good'); navigate('connect'); });
+      sheet.appendChild(r);
+    });
+    const c=el('button',{class:'btn ghost',style:'margin-top:6px'},'Cancel'); c.addEventListener('click',()=>{ close(); toast('Sign-in cancelled','bad'); }); sheet.appendChild(c);
+  }});
+}
+
+/* ---------- earner / points ---------- */
+screens.earn={tab:'earn',back:false,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'row',style:'margin:6px 0 2px'}, el('div',{class:'h1',style:'margin:0'},'Earn'), el('div',{class:'spacer'}), el('span',{class:'badge '+(state.earnerActive?'best':'warn')}, state.earnerActive?'Earning':'Paused')));
+  const bal=el('div',{class:'card',style:'padding:20px;margin-top:12px'});
+  bal.appendChild(el('div',{class:'label'},'Your points'));
+  bal.appendChild(el('div',{class:'stat'},state.points.toLocaleString()));
+  bal.appendChild(el('div',{class:'ds',style:'margin-top:2px'},'≈ $'+(state.points*0.01).toFixed(2)+' in rewards · +120 this week'));
+  const rd=el('button',{class:'btn',style:'margin-top:14px'},'Redeem points'); rd.addEventListener('click',()=>navigate('redeem')); bal.appendChild(rd);
+  w.appendChild(bal);
+  const be=el('div',{class:'card',style:'padding:16px;margin-top:14px'});
+  be.appendChild(el('div',{class:'row'}, icon('bolt',22,'color:var(--violet)'), el('div',{style:'flex:1'}, el('div',{class:'nm'},'Background earner'), el('div',{class:'ds'}, state.earnerActive?'Earning quietly · last run 12 min ago':'Paused — turn on to earn')), toggleSwitch(state.earnerActive,(v)=>{ state.earnerActive=v; toast(v?'Background earner on':'Background earner paused', v?'good':''); renderScreen(); })));
+  w.appendChild(be);
+  const boost=el('div',{class:'card',style:'padding:14px 16px;margin-top:12px;border-color:var(--violet)'});
+  const bb=el('button',{class:'btn sm'},'Run now');
+  boost.appendChild(el('div',{class:'row'}, el('span',{class:'badge accent'},'2× BOOST'), el('div',{class:'ds',style:'flex:1'},'Double points until 9:00 PM'), bb));
+  bb.addEventListener('click',()=>{ state.points+=24; toast('Boost scan complete · +24 pts','good'); renderScreen(); });
+  w.appendChild(boost);
+  w.appendChild(el('div',{class:'label',style:'margin:18px 0 8px'},'Recent activity'));
+  const act=el('div',{class:'card'});
+  [['Uber route price check','+12','12 min ago'],['Instacart basket scan','+18','1 hr ago'],['Lyft route price check','+12','2 hr ago'],['Boost · Walmart scan','+24','3 hr ago']].forEach((a,i,arr)=>{ act.appendChild(el('div',{class:'lrow'}, icon('refresh',20,'color:var(--muted)'), el('div',{style:'flex:1'}, el('div',{class:'nm',style:'font-size:14.5px'},a[0]), el('div',{class:'ds'},a[2])), el('div',{style:'font-weight:700;color:var(--savings)'},a[1]+' pts'))); if(i<arr.length-1) act.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  w.appendChild(act);
+  return w;
+}};
+screens.redeem={tab:'earn',back:true,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'h1'},'Redeem points'));
+  w.appendChild(el('div',{class:'sub'},'You have '+state.points.toLocaleString()+' points (≈ $'+(state.points*0.01).toFixed(2)+').'));
+  const card=el('div',{class:'card'});
+  [['wallet','$5 ride credit','500 points',500],['store','$10 gift card','1,000 points',1000],['wallet','Cash out to bank','2,000 points',2000]].forEach(([ic,t,d,cost],i,arr)=>{
+    const btn=el('button',{class:'btn sm'+(state.points<cost?' secondary':'')}, state.points<cost?'Locked':'Redeem');
+    const r=el('div',{class:'lrow'}, icon(ic,22,'color:var(--violet)'), el('div',{style:'flex:1'}, el('div',{class:'nm'},t), el('div',{class:'ds'},d)), btn);
+    btn.addEventListener('click',()=>{ if(state.points<cost){ toast('Not enough points yet','bad'); return; } showAlert({title:'Redeem '+t+'?',body:'This uses '+d+' from your balance.',actions:[{label:'Cancel',kind:'secondary'},{label:'Confirm',kind:'primary',onClick:()=>{ state.points-=cost; toast('Redeemed '+t,'good'); renderScreen(); }}]}); });
+    card.appendChild(r); if(i<arr.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
+  });
+  w.appendChild(card);
+  return w;
+}};
+
+/* ---------- account / system ---------- */
+screens.account={tab:'account',back:false,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'row',style:'gap:14px;margin:10px 0 16px'}, el('div',{class:'avatar'},'TK'), el('div',{}, el('div',{style:'font-weight:700;font-size:18px'},'Tosh Kothari'), el('div',{class:'ds'},'tosh.kothari@gmail.com'), el('div',{class:'ds'},'Account #JEDI-4821'))));
+  const ps=el('div',{class:'card',style:'padding:14px 16px;margin-bottom:16px'}); const psb=el('button',{class:'btn sm'},'Redeem');
+  ps.appendChild(el('div',{class:'row'}, icon('bolt',20,'color:var(--violet)'), el('div',{style:'flex:1'}, el('div',{class:'nm'},state.points.toLocaleString()+' points'), el('div',{class:'ds'},'≈ $'+(state.points*0.01).toFixed(2))), psb)); psb.addEventListener('click',()=>navigate('redeem')); w.appendChild(ps);
+  const card=el('div',{class:'card'});
+  const rows=[['car','Connected apps',()=>navigate('connectedapps'),(state.connected.rides.size+state.connected.grocery.size)+' connected'],['bell','Notifications',()=>navigate('notifications'),''],['sliders','Settings',()=>navigate('settings'),''],['info','Help & support',()=>navigate('help'),''],['shield','Privacy Policy',()=>legal('Privacy Policy'),''],['shield','Terms of Service',()=>legal('Terms of Service'),'']];
+  rows.forEach(([ic,t,fn,badge],i)=>{ card.appendChild(menuRow(ic,t,{onClick:fn,badge:badge||undefined})); if(i<rows.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  w.appendChild(card);
+  const out=el('button',{class:'btn secondary',style:'margin-top:16px;color:var(--danger)'},'Log out'); out.addEventListener('click',()=>showAlert({title:'Log out?',body:'You’ll need to sign in again to compare prices.',actions:[{label:'Cancel',kind:'secondary'},{label:'Log out',kind:'danger',onClick:()=>{ state.signedIn=false; navigate('signin'); }}]})); w.appendChild(out);
+  return w;
+}};
+screens.connectedapps={tab:'account',back:true,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'h1'},'Connected apps'));
+  w.appendChild(el('div',{class:'sub'},'Manage the apps Jedi reads prices from. Reconnect if a session expires.'));
+  Object.keys(CATEGORIES).forEach(catKey=>{
+    const cat=CATEGORIES[catKey]; const conn=cat.providers.filter(id=>state.connected[catKey].has(id));
+    w.appendChild(el('div',{class:'label',style:'margin:14px 0 8px'},cat.label));
+    const card=el('div',{class:'card'});
+    if(!conn.length){ card.appendChild(el('div',{class:'lrow'}, el('div',{class:'ds'},'No '+cat.label.toLowerCase()+' apps connected yet'))); }
+    conn.forEach((id,i)=>{ const expired=(catKey==='rides'&&id==='uber'); const btn=el('button',{class:'btn sm'+(expired?'':' secondary')}, expired?'Reconnect':'Remove'); const r=el('div',{class:'lrow'}, plogo(id,40), el('div',{style:'flex:1'}, el('div',{class:'nm'},LOGOS[id].name), el('div',{class:'ds',style:expired?'color:var(--warn)':''}, expired?'Session expired':'Connected · working')), btn); btn.addEventListener('click',()=>{ if(expired){ connectFlow(id); } else { showAlert({title:'Remove '+LOGOS[id].name+'?',body:'Jedi will stop comparing prices from this app.',actions:[{label:'Cancel',kind:'secondary'},{label:'Remove',kind:'danger',onClick:()=>{ state.connected[catKey].delete(id); toast(LOGOS[id].name+' removed'); renderScreen(); }}]}); } }); card.appendChild(r); if(i<conn.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+    w.appendChild(card);
+  });
+  const add=el('button',{class:'btn secondary',style:'margin-top:16px'}, icon('plus',18), 'Connect more apps'); add.addEventListener('click',()=>navigate('connect')); w.appendChild(add);
+  return w;
+}};
+screens.settings={tab:'account',back:true,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'h1'},'Settings'));
+  const card=el('div',{class:'card',style:'margin-top:8px'});
+  [['bell','Push notifications',true,null],['bolt','Background earner',state.earnerActive,'earner'],['pin','Match timezone to location',true,null],['trendDown','Dark mode',state.dark,'dark'],['shield','Share anonymized price data',true,null]].forEach(([ic,label,on,key],i,arr)=>{ const ctrl=toggleSwitch(on,(v)=>{ if(key==='dark'){ state.dark=v; document.body.classList.toggle('dark',v); } if(key==='earner'){ state.earnerActive=v; } renderScreen(); toast(label+(v?' on':' off')); }); card.appendChild(menuRow(ic,label,{control:ctrl,noChev:true})); if(i<arr.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  w.appendChild(card);
+  const del=el('button',{class:'btn secondary',style:'margin-top:18px;color:var(--danger)'},'Delete account'); del.addEventListener('click',()=>showAlert({title:'Delete account?',body:'This permanently deletes your account, points and connected apps. This cannot be undone.',actions:[{label:'Cancel',kind:'secondary'},{label:'Delete',kind:'danger',onClick:()=>toast('Account deletion requested')}]})); w.appendChild(del);
+  w.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:16px;font-size:12px'},'Jedi v0.9.0 (prototype)'));
+  return w;
+}};
+screens.notifications={tab:'account',back:true,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'h1'},'Notifications'));
+  const card=el('div',{class:'card'});
+  [['bolt','You earned 24 points','Boost scan on Walmart completed','now',true],['bolt','2× points until 9 PM','Run a scan to earn double','2 hr',true],['alert','Uber session expired','Reconnect to keep comparing Uber','5 hr',false],['trendDown','You saved $13.79','Walmart was cheapest on your last basket','1 d',false]].forEach((it,i,arr)=>{ card.appendChild(el('div',{class:'lrow',style:'align-items:flex-start'}, el('div',{class:'plogo',style:'width:36px;height:36px;background:'+(it[4]?'var(--violet-tint)':'var(--track)')+';color:'+(it[4]?'var(--violet)':'var(--muted)')}, icon(it[0],18)), el('div',{style:'flex:1'}, el('div',{class:'nm',style:'font-size:14.5px'},it[1]), el('div',{class:'ds'},it[2])), el('div',{class:'ds'},it[3]))); if(i<arr.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  w.appendChild(card);
+  return w;
+}};
+screens.help={tab:'account',back:true,render(){
+  const w=el('div',{class:'pad'});
+  w.appendChild(el('div',{class:'h1'},'Help & support'));
+  const card=el('div',{class:'card',style:'margin-top:8px'});
+  [['info','How Jedi works',()=>legal('How Jedi works')],['search','FAQs',()=>toast('Opening FAQs…')],['bell','Contact support',()=>toast('Opening support chat…')],['shield','Privacy Policy',()=>legal('Privacy Policy')],['shield','Terms of Service',()=>legal('Terms of Service')]].forEach(([ic,t,fn],i,arr)=>{ card.appendChild(menuRow(ic,t,{onClick:fn})); if(i<arr.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  w.appendChild(card);
+  w.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:16px;font-size:12px'},'Jedi v0.9.0 (prototype) · support@jedi.app'));
+  return w;
+}};
+function legal(title){ showSheet({title, build:(sheet,close)=>{ sheet.appendChild(el('div',{class:'sub'},'Placeholder copy for the prototype — production links to the full '+title+'.')); ['Jedi reads on-screen prices from apps you connect, only when you ask for a comparison or during a background price check.','Your account credentials never leave your device. Jedi cannot see your passwords.','You can disconnect any app or delete your account at any time in Settings.'].forEach(p=>sheet.appendChild(el('div',{style:'font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:10px'},p))); const ok=el('button',{class:'btn',style:'margin-top:6px'},'Close'); ok.addEventListener('click',close); sheet.appendChild(ok); }}); }
+
+/* ---------- global alerts / system states ---------- */
+const ALERTS={
+  offline:()=>{ state.offline=!state.offline; renderScreen(); toast(state.offline?'You are offline':'Back online', state.offline?'bad':'good'); },
+  sessionExpired:()=>showAlert({title:'Session expired',body:'For your security, please sign in again.',actions:[{label:'Sign in',kind:'primary',onClick:()=>{ state.signedIn=false; navigate('signin'); }}]}),
+  loginExpired:()=>showAlert({title:'Uber sign-in expired',body:'Open Uber and sign in again so Jedi can keep reading its prices.',actions:[{label:'Later',kind:'secondary'},{label:'Reconnect',kind:'primary',onClick:()=>connectFlow('uber')}]}),
+  accessRevoked:()=>showAlert({system:true,title:'Accessibility turned off',body:'Jedi’s Accessibility permission was turned off, so it can’t read prices. Re-enable it to keep comparing.',actions:[{label:'Not now',kind:'secondary'},{label:'Open settings',kind:'primary',onClick:()=>toast('Opening Accessibility settings…')}]}),
+  forceUpdate:()=>showAlert({title:'Update required',body:'A new version of Jedi is required to keep going.',actions:[{label:'Update now',kind:'primary',onClick:()=>toast('Opening App Store…')}]}),
+  locationDenied:()=>showAlert({title:'Location is off',body:'Turn on location so Jedi can set your pickup automatically.',actions:[{label:'Enter manually',kind:'secondary'},{label:'Turn on',kind:'primary',onClick:()=>toast('Opening Location settings…')}]}),
+  battery:()=>showAlert({title:'Allow background activity',body:'To earn while the app is closed, allow Jedi to run in the background (disable battery optimization).',actions:[{label:'Skip',kind:'secondary'},{label:'Allow',kind:'primary',onClick:()=>toast('Opening battery settings…')}]}),
+  pointsEarned:()=>{ state.points+=12; toast('You earned 12 points','good'); if(state.screen==='earn'||state.screen==='account') renderScreen(); },
+  bgNotif:()=>toast('Jedi is running a price check in the background…'),
+};
+function alertsMenu(){ showSheet({title:'Global alerts & states', build:(sheet,close)=>{ sheet.appendChild(el('div',{class:'sub',style:'font-size:13px'},'Trigger any system state to preview it — these are the edge cases the dev must build.')); [['offline','Offline / back online'],['sessionExpired','Session expired'],['loginExpired','Provider sign-in expired'],['accessRevoked','Accessibility revoked'],['forceUpdate','Force update'],['locationDenied','Location denied'],['battery','Background / battery'],['pointsEarned','Points earned'],['bgNotif','Background price check']].forEach(([k,label])=>{ const r=el('div',{class:'lrow',style:'cursor:pointer;padding:13px 0'}, icon('alert',20,'color:var(--violet)'), el('div',{class:'nm',style:'flex:1'},label), icon('chevron',18,'color:var(--muted)')); r.addEventListener('click',()=>{ close(); setTimeout(()=>ALERTS[k](),260); }); sheet.appendChild(r); }); }}); }
 
 /* ============================ router + chrome ============================ */
 const TABS=[{id:'home',label:'Home',icon:'home'},{id:'earn',label:'Earn',icon:'bolt'},{id:'account',label:'Account',icon:'user'}];
@@ -613,11 +788,15 @@ function renderTabbar(){
   bar.style.display='flex'; bar.innerHTML='';
   TABS.forEach(t=>{ const b=el('button',{class:'tab'+(t.id===at?' active':'')}, icon(t.icon,22), t.label); b.addEventListener('click',()=>navigate(t.id==='home'?'home':t.id)); bar.appendChild(b); });
 }
-function renderScreen(){ const s=screens[state.screen]; const scr=document.getElementById('screen'); scr.innerHTML=''; scr.scrollTop=0; scr.appendChild(s.render()); renderTabbar(); syncJump(); }
-function navigate(id){ if(!screens[id]) return; state.screen=id; if(id==='results'){ state.resultsPhase='loading'; renderScreen(); setTimeout(()=>{ if(state.screen==='results'){ state.resultsPhase='loaded'; renderScreen(); } },1300); return; } renderScreen(); }
+function renderScreen(){ const s=screens[state.screen]; const scr=document.getElementById('screen'); scr.innerHTML=''; scr.scrollTop=0; if(state.offline) scr.appendChild(el('div',{class:'gbanner'}, icon('alert',16), 'No internet connection — showing last known prices')); scr.appendChild(s.render()); renderTabbar(); syncJump(); }
+function navigate(id){ if(!screens[id]) return; state.screen=id;
+  if(id==='splash'){ renderScreen(); setTimeout(()=>{ if(state.screen==='splash') navigate('intro'); },1300); return; }
+  if(id==='results'){ state.resultsPhase='loading'; renderScreen(); setTimeout(()=>{ if(state.screen==='results'){ state.resultsPhase='loaded'; renderScreen(); } },1300); return; }
+  renderScreen();
+}
 
 /* jump menu (category-aware) */
-const JUMP=[['rides|connect','Rides · Connect'],['rides|home','Rides · Home'],['rides|results','Rides · Results'],['grocery|connect','Grocery · Connect'],['grocery|home','Grocery · Home'],['grocery|results','Grocery · Results'],['rides|earn','Earn (Checkpoint 2)'],['rides|account','Account (Checkpoint 2)']];
+const JUMP=[['rides|splash','Splash'],['rides|intro','Intro'],['rides|signin','Sign in'],['rides|connect','Connect · Rides'],['rides|home','Home · Rides'],['rides|results','Results · Rides'],['grocery|connect','Connect · Grocery'],['grocery|home','Home · Grocery'],['grocery|results','Results · Grocery'],['rides|earn','Earn / points'],['rides|redeem','Redeem'],['rides|account','Account'],['rides|connectedapps','Connected apps'],['rides|settings','Settings'],['rides|notifications','Notifications'],['rides|help','Help & support']];
 const jump=document.getElementById('jump');
 JUMP.forEach(([v,l])=>jump.appendChild(el('option',{value:v},l)));
 jump.addEventListener('change',e=>{ const [cat,scr]=e.target.value.split('|'); state.category=cat; navigate(scr); });
@@ -628,21 +807,22 @@ document.querySelector('.toolbar').addEventListener('click',e=>{ const b=e.targe
   if(t==='dark'){ state.dark=!state.dark; document.body.classList.toggle('dark',state.dark); b.textContent=state.dark?'Light':'Dark'; }
   if(t==='reset'){ state.connected.rides.clear(); state.connected.grocery.clear(); state.to=''; state.basket=DEFAULT_BASKET.map(x=>({...x})); state.category='rides'; navigate('connect'); toast('Prototype reset'); }
   if(t==='map'){ document.getElementById('map').classList.toggle('show'); }
+  if(t==='alerts'){ alertsMenu(); }
 });
 document.getElementById('map').addEventListener('click',e=>{ if(e.target.closest('[data-tool="map"]')) document.getElementById('map').classList.remove('show'); });
 
 /* flow-map overlay */
 const MAP=[
-  ['A · Onboarding & Auth',[['Splash + version gate',0],['Value-prop intro',0],['Google sign-in',0]]],
-  ['B · Category & connect',[['Category select',1,'rides|connect'],['Connect — Rides',1,'rides|connect'],['Connect — Grocery',1,'grocery|connect'],['Permission disclosure',1,'rides|connect'],['Privacy & terms',0],['Notifications opt-in',0]]],
+  ['A · Onboarding & Auth',[['Splash + version gate',1,'rides|splash'],['Value-prop intro',1,'rides|intro'],['Google sign-in',1,'rides|signin'],['Privacy & terms',1,'rides|signin']]],
+  ['B · Category & connect',[['Category select',1,'rides|connect'],['Connect — Rides',1,'rides|connect'],['Connect — Grocery',1,'grocery|connect'],['Permission disclosure',1,'rides|connect'],['Notifications opt-in',0]]],
   ['C · Rides compare',[['Rides Home',1,'rides|home'],['Location autocomplete',1,'rides|home'],['Comparing',1,'rides|results'],['Rides Results',1,'rides|results'],['Ride detail',1,'rides|results'],['Book hand-off',1,'rides|results']]],
   ['D · Grocery compare',[['Grocery Home (basket)',1,'grocery|home'],['Add item',1,'grocery|home'],['Grocery Results',1,'grocery|results'],['Store detail',1,'grocery|results'],['Order hand-off',1,'grocery|results']]],
-  ['E · Earner / points',[['Points wallet',0],['Background earner',0],['Boost nudge',0],['Redeem',0]]],
-  ['F · Account / system',[['Profile',0],['Connected apps',0],['Settings',0],['Help / legal',0]]],
-  ['G · Global alerts',[['Offline',0],['Session expired',0],['Login expired',0],['Accessibility revoked',0],['Surge warning',1,'rides|results'],['Out of stock',1,'grocery|results'],['Deeplink fallback',1,'rides|results']]],
+  ['E · Earner / points',[['Points wallet',1,'rides|earn'],['Background earner',1,'rides|earn'],['Boost nudge',1,'rides|earn'],['Redeem',1,'rides|redeem']]],
+  ['F · Account / system',[['Profile',1,'rides|account'],['Connected apps',1,'rides|connectedapps'],['Settings',1,'rides|settings'],['Notifications',1,'rides|notifications'],['Help / legal',1,'rides|help']]],
+  ['G · Global alerts',[['Offline',1,'alert:offline'],['Session expired',1,'alert:sessionExpired'],['Login expired',1,'alert:loginExpired'],['Accessibility revoked',1,'alert:accessRevoked'],['Force update',1,'alert:forceUpdate'],['Location denied',1,'alert:locationDenied'],['Surge warning',1,'rides|results'],['Out of stock',1,'grocery|results'],['Deeplink fallback',1,'rides|results']]],
 ];
 const mapBody=document.getElementById('map-body');
-MAP.forEach(([grp,nodes])=>{ mapBody.appendChild(el('div',{class:'grp'},grp)); const row=el('div',{}); nodes.forEach(([nm,live,target])=>{ const n=el('div',{class:'node '+(live?'live':'todo')},nm); if(live&&target) n.addEventListener('click',()=>{ document.getElementById('map').classList.remove('show'); const [cat,scr]=target.split('|'); state.category=cat; navigate(scr); }); row.appendChild(n); }); mapBody.appendChild(row); });
+MAP.forEach(([grp,nodes])=>{ mapBody.appendChild(el('div',{class:'grp'},grp)); const row=el('div',{}); nodes.forEach(([nm,live,target])=>{ const n=el('div',{class:'node '+(live?'live':'todo')},nm); if(live&&target) n.addEventListener('click',()=>{ document.getElementById('map').classList.remove('show'); if(target.indexOf('alert:')===0){ setTimeout(()=>ALERTS[target.slice(6)](),200); return; } const [cat,scr]=target.split('|'); state.category=cat; navigate(scr); }); row.appendChild(n); }); mapBody.appendChild(row); });
 
 /* chrome glyphs */
 document.getElementById('brandmark').appendChild(el('span',{class:'plogo',style:'width:20px;height:20px;background:var(--violet);color:#fff;border-radius:6px'}, icon('trendDown',13)));
@@ -650,7 +830,7 @@ document.getElementById('statusicons').appendChild(icon('bell',13)); document.ge
 function tick(){ const d=new Date(); document.getElementById('clock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 setInterval(tick,10000); tick();
 
-navigate('connect');
+navigate('splash');
 </script>
 </body>
 </html>
