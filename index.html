@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jedi (codename) — Interactive Prototype</title>
+<title>Jedi (codename): Interactive Prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   Jedi prototype v2 — single-file, dependency-free (fonts optional).
+   Jedi prototype v2, single-file, dependency-free (fonts optional).
    Styled to jedi-design/identity.md: ink primary + violet accent,
    Inter, SVG line icons (no emoji), category -> providers IA.
    Categories fully built: Rides + Grocery.
@@ -188,6 +188,10 @@ select.tbtn{padding-right:8px}
 .avatar{width:56px; height:56px; border-radius:50%; background:var(--violet); color:#fff; display:grid; place-items:center; font-weight:700; font-size:21px; flex:0 0 auto}
 .intro-row{display:flex; gap:14px; align-items:flex-start; padding:13px 0}
 .intro-row .ic{color:var(--violet); margin-top:2px}
+.tierbar{display:flex; gap:8px; overflow-x:auto; padding:2px 0 4px; margin-bottom:2px}
+.tierbar::-webkit-scrollbar{height:0}
+.tierchip{flex:0 0 auto; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:var(--font); font-weight:600; font-size:13.5px; padding:8px 15px; border-radius:999px; cursor:pointer}
+.tierchip.active{background:var(--btn-bg); color:var(--btn-fg); border-color:var(--btn-bg)}
 
 /* map overlay */
 .map{position:fixed; inset:0; background:rgba(14,11,28,.55); z-index:200; display:none; padding:30px; overflow:auto}
@@ -222,8 +226,8 @@ select.tbtn{padding-right:8px}
 
   <div class="map" id="map">
     <div class="map-inner">
-      <div class="row"><h2 style="flex:1">Jedi — full screen inventory</h2><button class="tbtn" data-tool="map">Close</button></div>
-      <p class="muted">Live screens are tappable. The rest arrive in Checkpoints 2–3 (full Mermaid flow map ships as <code>flow-map.md</code>).</p>
+      <div class="row"><h2 style="flex:1">Jedi: full screen inventory</h2><button class="tbtn" data-tool="map">Close</button></div>
+      <p class="muted">Live screens are tappable. The rest arrive in Checkpoints 2 and 3 (full Mermaid flow map ships as <code>flow-map.md</code>).</p>
       <div id="map-body"></div>
     </div>
   </div>
@@ -288,12 +292,14 @@ const CATEGORIES={
   rides:{label:'Rides',icon:'car',kind:'route',providers:['uber','lyft','curb','waymo','kaptyn']},
   grocery:{label:'Grocery',icon:'cart',kind:'basket',providers:['instacart','walmart','doordash','amazon','target']},
 };
-const RIDE_PRICES={
-  uber:{type:'UberX',price:18.40,eta:'4 min',alt:{type:'Uber Comfort',price:24.70,eta:'5 min',surge:'1.4×'}},
-  lyft:{type:'Lyft',price:19.10,eta:'3 min'},
-  kaptyn:{type:'Kaptyn EV',price:21.00,eta:'6 min'},
-  curb:{type:'Curb Taxi',price:22.50,eta:'7 min'},
-  waymo:{type:'Waymo One',price:26.00,eta:'9 min',tag:'Driverless'},
+/* ride classes, matched across providers (Economy / Comfort / Premium / Group) */
+const RIDE_TIERS=[{key:'economy',label:'Economy'},{key:'comfort',label:'Comfort'},{key:'premium',label:'Premium'},{key:'xl',label:'Group XL'}];
+const RIDE_DATA={
+  uber:{economy:{type:'UberX',price:18.40,eta:'4 min'},comfort:{type:'Uber Comfort',price:24.70,eta:'5 min',surge:'1.4x'},premium:{type:'Uber Black',price:39.00,eta:'7 min'},xl:{type:'UberXL',price:28.00,eta:'6 min'}},
+  lyft:{economy:{type:'Lyft',price:19.10,eta:'3 min'},comfort:{type:'Lyft Extra Comfort',price:25.40,eta:'5 min'},premium:{type:'Lyft Lux',price:40.50,eta:'8 min'},xl:{type:'Lyft XL',price:27.30,eta:'5 min'}},
+  kaptyn:{comfort:{type:'Kaptyn',price:23.50,eta:'6 min'},premium:{type:'Kaptyn EV',price:21.00,eta:'6 min',tag:'EV'}},
+  curb:{economy:{type:'Curb Taxi',price:22.50,eta:'7 min'},xl:{type:'Curb SUV',price:30.00,eta:'8 min'}},
+  waymo:{economy:{type:'Waymo One',price:26.00,eta:'9 min',tag:'Driverless'},premium:{type:'Waymo One',price:26.00,eta:'9 min',tag:'Driverless'}},
 };
 const GROCERY_STORES={
   walmart:{total:38.50,fee:0,avail:12},
@@ -309,7 +315,7 @@ const DEFAULT_BASKET=[
 
 /* ============================ state ============================ */
 const state={
-  dark:false, category:'rides',
+  dark:false, category:'rides', tier:'economy',
   connected:{rides:new Set(), grocery:new Set()},
   from:'Current location', to:'',
   basket:DEFAULT_BASKET.map(x=>({...x})),
@@ -388,7 +394,7 @@ function segmented(){
 }
 function moreCategories(){
   showSheet({title:'More categories', build:(sheet)=>{
-    sheet.appendChild(el('div',{class:'sub'},'Jedi is category-first — each new vertical is just a provider set. These are next:'));
+    sheet.appendChild(el('div',{class:'sub'},'Jedi is category-first. Each new vertical is just a provider set. These are next:'));
     [['store','Food delivery','Uber Eats · DoorDash · Grubhub'],['cart','Pharmacy','CVS · Walgreens'],['pin','Stays','Booking · Airbnb'],['car','Flights','Google Flights · Kayak']].forEach(([ic,t,d])=>{
       const r=el('div',{class:'lrow',style:'padding:13px 0'}, icon(ic,22,'color:var(--muted)'),
         el('div',{style:'flex:1'}, el('div',{class:'nm'},t), el('div',{class:'ds'},d)),
@@ -413,7 +419,7 @@ function connectFlow(id){
     const grant=el('button',{class:'btn sm'},'Grant');
     list.appendChild(step('lock','pending','Allow Jedi to read prices','Requires Accessibility permission',grant));
     sheet.appendChild(list);
-    sheet.appendChild(el('div',{class:'trust',style:'margin-top:16px'}, icon('shield',18), el('span',{},'Your sign-in stays on your device. Jedi reads only the prices shown on screen — never your password.')));
+    sheet.appendChild(el('div',{class:'trust',style:'margin-top:16px'}, icon('shield',18), el('span',{},'Your sign-in stays on your device. Jedi reads only the prices shown on screen, never your password.')));
     grant.addEventListener('click',()=>{
       if(!p.installed){ toast('Install '+p.name+' first','bad'); return; }
       showAlert({system:true,title:'Use Jedi with '+p.name+'?',
@@ -436,7 +442,7 @@ screens.connect={tab:null,back:false,render(){
   wrap.appendChild(el('div',{class:'h1'},'Connect your apps'));
   wrap.appendChild(el('div',{class:'sub'},'Jedi compares prices using apps you already have. Choose a category, then connect at least one provider.'));
   wrap.appendChild(segmented());
-  wrap.appendChild(el('div',{class:'trust',style:'margin-bottom:16px'}, icon('shield',18), el('span',{},'We never see your passwords. Your accounts stay yours — Jedi only reads prices.')));
+  wrap.appendChild(el('div',{class:'trust',style:'margin-bottom:16px'}, icon('shield',18), el('span',{},'We never see your passwords. Your accounts stay yours. Jedi only reads prices.')));
   const card=el('div',{class:'card'});
   cat.providers.forEach((id,i)=>{
     const p=LOGOS[id]; const on=state.connected[state.category].has(id);
@@ -555,23 +561,43 @@ screens.results={tab:'home',back:true,render(){
   return wrap;
 }};
 
-function renderRidesResults(wrap){
-  const conn=CATEGORIES.rides.providers.filter(id=>state.connected.rides.has(id));
-  const priced=conn.map(id=>({id,...RIDE_PRICES[id]})).sort((a,b)=>a.price-b.price);
-  if(priced.length>=2){ const save=(priced[priced.length-1].price-priced[0].price); wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},'Cheapest is '+priced[0].type+' — you save '+money(save)+' vs the priciest'))); }
-  const card=el('div',{class:'card',style:'margin-top:16px'});
-  priced.forEach((d,i)=>{
-    const r=el('div',{class:'lrow',style:'cursor:pointer'}); r.appendChild(plogo(d.id,42));
-    const mid=el('div',{style:'flex:1;min-width:0'}); const tr=el('div',{class:'row',style:'gap:7px'}); tr.appendChild(el('span',{class:'nm'},d.type)); if(i===0) tr.appendChild(el('span',{class:'badge best'},'BEST VALUE')); if(d.surge) tr.appendChild(el('span',{class:'badge warn'},icon('bolt',12),d.surge)); if(d.tag) tr.appendChild(el('span',{class:'badge accent'},d.tag)); mid.appendChild(tr); mid.appendChild(el('div',{class:'ds'},d.eta+' away')); r.appendChild(mid);
-    r.appendChild(el('div',{class:'price',style:i===0?'color:var(--savings)':''},money(d.price)));
-    r.addEventListener('click',()=>rideDetail(d)); card.appendChild(r); card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
-  });
-  // unconnected upsell rows
-  CATEGORIES.rides.providers.filter(id=>!state.connected.rides.has(id)).forEach(id=>{ const r=el('div',{class:'lrow'}); r.appendChild(el('div',{style:'opacity:.5'},plogo(id,42))); r.appendChild(el('div',{style:'flex:1'},el('div',{class:'nm'},LOGOS[id].name),el('div',{class:'ds'},'Connect to compare'))); const b=el('button',{class:'btn sm secondary'},'Connect'); b.addEventListener('click',()=>connectFlow(id)); r.appendChild(b); card.appendChild(r); card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
-  // a failed fetch example
-  const fr=el('div',{class:'lrow'}); fr.appendChild(el('div',{style:'opacity:.55'},plogo('lyft',42))); fr.appendChild(el('div',{style:'flex:1'},el('div',{class:'row',style:'gap:7px'},el('span',{class:'nm'},'Lyft XL'),el('span',{class:'badge fail'},'COULDN’T FETCH')),el('div',{class:'ds'},'Price unavailable right now'))); const rb=el('button',{class:'btn sm secondary'},'Retry'); rb.addEventListener('click',()=>toast('Retrying Lyft XL…')); fr.appendChild(rb); card.appendChild(fr);
+function tierBar(){
+  const bar=el('div',{class:'tierbar'});
+  RIDE_TIERS.forEach(t=>{ const b=el('button',{class:'tierchip'+(state.tier===t.key?' active':'')},t.label); b.addEventListener('click',()=>{ state.tier=t.key; renderScreen(); }); bar.appendChild(b); });
+  return bar;
+}
+function ridesUpsell(wrap){
+  const missing=CATEGORIES.rides.providers.filter(id=>!state.connected.rides.has(id));
+  if(!missing.length) return;
+  const card=el('div',{class:'card',style:'margin-top:12px'});
+  const logos=el('div',{class:'row',style:'gap:0'}); missing.slice(0,5).forEach(id=>{ const lg=plogo(id,30); lg.style.marginRight='-8px'; lg.style.border='2px solid var(--card)'; logos.appendChild(lg); });
+  const b=el('button',{class:'btn sm secondary'},'Connect');
+  card.appendChild(el('div',{class:'lrow'}, logos, el('div',{style:'flex:1;margin-left:8px'}, el('div',{class:'nm',style:'font-size:14px'},'Compare '+missing.length+' more apps'), el('div',{class:'ds'},'Connect to add their prices')), b));
+  b.addEventListener('click',()=>navigate('connect'));
   wrap.appendChild(card);
-  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:12.5px'},'Prices read live from your apps moments ago. Tap an option to book.'));
+}
+function renderRidesResults(wrap){
+  wrap.appendChild(tierBar());
+  const tierLabel=(RIDE_TIERS.find(t=>t.key===state.tier)||{}).label;
+  const conn=CATEGORIES.rides.providers.filter(id=>state.connected.rides.has(id));
+  const opts=conn.map(id=>({id,...((RIDE_DATA[id]||{})[state.tier]||{})})).filter(o=>o.type).sort((a,b)=>a.price-b.price);
+  if(opts.length===0){
+    wrap.appendChild(el('div',{class:'card',style:'margin-top:14px'}, el('div',{class:'lrow'}, el('div',{class:'ds'},'None of your connected apps offer a '+tierLabel+' ride. Try another class, or connect more apps below.'))));
+    ridesUpsell(wrap); return;
+  }
+  if(opts.length>=2){ const save=opts[opts.length-1].price-opts[0].price; wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},opts[0].type+' is the cheapest '+tierLabel+' ride, '+money(save)+' less than the priciest'))); }
+  else { wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},'Showing '+tierLabel+' from your connected apps'))); }
+  const card=el('div',{class:'card',style:'margin-top:14px'});
+  opts.forEach((d,i)=>{
+    const best=(i===0&&opts.length>=2);
+    const r=el('div',{class:'lrow',style:'cursor:pointer'}); r.appendChild(plogo(d.id,42));
+    const mid=el('div',{style:'flex:1;min-width:0'}); const tr=el('div',{class:'row',style:'gap:7px'}); tr.appendChild(el('span',{class:'nm'},d.type)); if(best) tr.appendChild(el('span',{class:'badge best'},'BEST VALUE')); if(d.surge) tr.appendChild(el('span',{class:'badge warn'},icon('bolt',12),d.surge+' surge')); if(d.tag) tr.appendChild(el('span',{class:'badge accent'},d.tag)); mid.appendChild(tr); mid.appendChild(el('div',{class:'ds'},LOGOS[d.id].name+' · '+d.eta+' away')); r.appendChild(mid);
+    r.appendChild(el('div',{class:'price',style:best?'color:var(--savings)':''},money(d.price)));
+    r.addEventListener('click',()=>rideDetail(d)); card.appendChild(r); if(i<opts.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
+  });
+  wrap.appendChild(card);
+  ridesUpsell(wrap);
+  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:12.5px'},'The same class, matched across every app you connected. Tap an option to book.'));
 }
 function rideDetail(d){
   const p=LOGOS[d.id];
@@ -589,7 +615,7 @@ function rideDetail(d){
 function renderGroceryResults(wrap){
   const conn=CATEGORIES.grocery.providers.filter(id=>state.connected.grocery.has(id));
   const priced=conn.map(id=>({id,...GROCERY_STORES[id]})).sort((a,b)=>(a.total+a.fee)-(b.total+b.fee));
-  if(priced.length>=2){ const save=((priced[priced.length-1].total+priced[priced.length-1].fee)-(priced[0].total+priced[0].fee)); wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},'Cheapest basket is '+LOGOS[priced[0].id].name+' — you save '+money(save)+' all-in'))); }
+  if(priced.length>=2){ const save=((priced[priced.length-1].total+priced[priced.length-1].fee)-(priced[0].total+priced[0].fee)); wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},'Cheapest basket is '+LOGOS[priced[0].id].name+', saving '+money(save)+' all-in'))); }
   const card=el('div',{class:'card',style:'margin-top:16px'});
   priced.forEach((s,i)=>{
     const r=el('div',{class:'lrow',style:'cursor:pointer'}); r.appendChild(plogo(s.id,42));
@@ -633,8 +659,8 @@ screens.intro={tab:null,back:false,render(){
   const w=el('div',{class:'pad'});
   w.appendChild(el('div',{class:'plogo',style:'width:54px;height:54px;border-radius:16px;background:var(--violet);color:#fff;margin:16px 0 16px'}, icon('trendDown',28)));
   w.appendChild(el('div',{class:'h1',style:'font-size:26px;line-height:1.2'},'Compare every app. Always pay less.'));
-  w.appendChild(el('div',{class:'sub'},'Jedi checks the apps you already have and shows the cheapest option in one tap — for rides, groceries and more.'));
-  [['search','One place to compare','Uber, Lyft, Instacart, Walmart and more — side by side.'],['bolt','Earn while you save','Get points whenever Jedi runs a price check in the background.'],['shield','Private by design','Your logins never leave your device. Jedi only reads prices.']].forEach(([ic,t,d])=>{ w.appendChild(el('div',{class:'intro-row'}, icon(ic,24), el('div',{}, el('div',{style:'font-weight:700;font-size:15.5px'},t), el('div',{class:'ds',style:'margin-top:2px'},d)))); });
+  w.appendChild(el('div',{class:'sub'},'Jedi checks the apps you already have and shows the cheapest option in one tap, for rides, groceries and more.'));
+  [['search','One place to compare','Uber, Lyft, Instacart, Walmart and more, side by side.'],['bolt','Earn while you save','Get points whenever Jedi runs a price check in the background.'],['shield','Private by design','Your logins never leave your device. Jedi only reads prices.']].forEach(([ic,t,d])=>{ w.appendChild(el('div',{class:'intro-row'}, icon(ic,24), el('div',{}, el('div',{style:'font-weight:700;font-size:15.5px'},t), el('div',{class:'ds',style:'margin-top:2px'},d)))); });
   const cta=el('button',{class:'btn',style:'margin-top:20px'},'Get started'); cta.addEventListener('click',()=>navigate('signin')); w.appendChild(cta);
   const si=el('button',{class:'btn ghost',style:'margin-top:4px'},'I already have an account'); si.addEventListener('click',()=>navigate('signin')); w.appendChild(si);
   return w;
@@ -643,7 +669,7 @@ screens.signin={tab:null,back:true,render(){
   const w=el('div',{class:'pad'});
   w.appendChild(el('div',{class:'plogo',style:'width:54px;height:54px;border-radius:16px;background:var(--violet);color:#fff;margin:24px auto 14px'}, icon('trendDown',28)));
   w.appendChild(el('div',{class:'h1',style:'text-align:center'},'Sign in to Jedi'));
-  w.appendChild(el('div',{class:'sub',style:'text-align:center'},'Use your Google account — about ten seconds.'));
+  w.appendChild(el('div',{class:'sub',style:'text-align:center'},'Use your Google account, about ten seconds.'));
   const terms=el('div',{class:'row',style:'gap:11px;margin:6px 2px 16px;cursor:pointer'});
   const cbx=el('div',{class:'cbx'}, icon('check',15)); terms.appendChild(cbx);
   terms.appendChild(el('div',{class:'ds',style:'font-size:12.5px'},'I agree to the Terms of Service and Privacy Policy.'));
@@ -681,7 +707,7 @@ screens.earn={tab:'earn',back:false,render(){
   const rd=el('button',{class:'btn',style:'margin-top:14px'},'Redeem points'); rd.addEventListener('click',()=>navigate('redeem')); bal.appendChild(rd);
   w.appendChild(bal);
   const be=el('div',{class:'card',style:'padding:16px;margin-top:14px'});
-  be.appendChild(el('div',{class:'row'}, icon('bolt',22,'color:var(--violet)'), el('div',{style:'flex:1'}, el('div',{class:'nm'},'Background earner'), el('div',{class:'ds'}, state.earnerActive?'Earning quietly · last run 12 min ago':'Paused — turn on to earn')), toggleSwitch(state.earnerActive,(v)=>{ state.earnerActive=v; toast(v?'Background earner on':'Background earner paused', v?'good':''); renderScreen(); })));
+  be.appendChild(el('div',{class:'row'}, icon('bolt',22,'color:var(--violet)'), el('div',{style:'flex:1'}, el('div',{class:'nm'},'Background earner'), el('div',{class:'ds'}, state.earnerActive?'Earning quietly · last run 12 min ago':'Paused. Turn on to earn')), toggleSwitch(state.earnerActive,(v)=>{ state.earnerActive=v; toast(v?'Background earner on':'Background earner paused', v?'good':''); renderScreen(); })));
   w.appendChild(be);
   const boost=el('div',{class:'card',style:'padding:14px 16px;margin-top:12px;border-color:var(--violet)'});
   const bb=el('button',{class:'btn sm'},'Run now');
@@ -764,7 +790,7 @@ screens.help={tab:'account',back:true,render(){
   w.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:16px;font-size:12px'},'Jedi v0.9.0 (prototype) · support@jedi.app'));
   return w;
 }};
-function legal(title){ showSheet({title, build:(sheet,close)=>{ sheet.appendChild(el('div',{class:'sub'},'Placeholder copy for the prototype — production links to the full '+title+'.')); ['Jedi reads on-screen prices from apps you connect, only when you ask for a comparison or during a background price check.','Your account credentials never leave your device. Jedi cannot see your passwords.','You can disconnect any app or delete your account at any time in Settings.'].forEach(p=>sheet.appendChild(el('div',{style:'font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:10px'},p))); const ok=el('button',{class:'btn',style:'margin-top:6px'},'Close'); ok.addEventListener('click',close); sheet.appendChild(ok); }}); }
+function legal(title){ showSheet({title, build:(sheet,close)=>{ sheet.appendChild(el('div',{class:'sub'},'Placeholder copy for the prototype. Production links to the full '+title+'.')); ['Jedi reads on-screen prices from apps you connect, only when you ask for a comparison or during a background price check.','Your account credentials never leave your device. Jedi cannot see your passwords.','You can disconnect any app or delete your account at any time in Settings.'].forEach(p=>sheet.appendChild(el('div',{style:'font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:10px'},p))); const ok=el('button',{class:'btn',style:'margin-top:6px'},'Close'); ok.addEventListener('click',close); sheet.appendChild(ok); }}); }
 
 /* ---------- global alerts / system states ---------- */
 const ALERTS={
@@ -778,7 +804,7 @@ const ALERTS={
   pointsEarned:()=>{ state.points+=12; toast('You earned 12 points','good'); if(state.screen==='earn'||state.screen==='account') renderScreen(); },
   bgNotif:()=>toast('Jedi is running a price check in the background…'),
 };
-function alertsMenu(){ showSheet({title:'Global alerts & states', build:(sheet,close)=>{ sheet.appendChild(el('div',{class:'sub',style:'font-size:13px'},'Trigger any system state to preview it — these are the edge cases the dev must build.')); [['offline','Offline / back online'],['sessionExpired','Session expired'],['loginExpired','Provider sign-in expired'],['accessRevoked','Accessibility revoked'],['forceUpdate','Force update'],['locationDenied','Location denied'],['battery','Background / battery'],['pointsEarned','Points earned'],['bgNotif','Background price check']].forEach(([k,label])=>{ const r=el('div',{class:'lrow',style:'cursor:pointer;padding:13px 0'}, icon('alert',20,'color:var(--violet)'), el('div',{class:'nm',style:'flex:1'},label), icon('chevron',18,'color:var(--muted)')); r.addEventListener('click',()=>{ close(); setTimeout(()=>ALERTS[k](),260); }); sheet.appendChild(r); }); }}); }
+function alertsMenu(){ showSheet({title:'Global alerts & states', build:(sheet,close)=>{ sheet.appendChild(el('div',{class:'sub',style:'font-size:13px'},'Trigger any system state to preview it. These are the edge cases the dev must build.')); [['offline','Offline / back online'],['sessionExpired','Session expired'],['loginExpired','Provider sign-in expired'],['accessRevoked','Accessibility revoked'],['forceUpdate','Force update'],['locationDenied','Location denied'],['battery','Background / battery'],['pointsEarned','Points earned'],['bgNotif','Background price check']].forEach(([k,label])=>{ const r=el('div',{class:'lrow',style:'cursor:pointer;padding:13px 0'}, icon('alert',20,'color:var(--violet)'), el('div',{class:'nm',style:'flex:1'},label), icon('chevron',18,'color:var(--muted)')); r.addEventListener('click',()=>{ close(); setTimeout(()=>ALERTS[k](),260); }); sheet.appendChild(r); }); }}); }
 
 /* ============================ router + chrome ============================ */
 const TABS=[{id:'home',label:'Home',icon:'home'},{id:'earn',label:'Earn',icon:'bolt'},{id:'account',label:'Account',icon:'user'}];
@@ -788,7 +814,7 @@ function renderTabbar(){
   bar.style.display='flex'; bar.innerHTML='';
   TABS.forEach(t=>{ const b=el('button',{class:'tab'+(t.id===at?' active':'')}, icon(t.icon,22), t.label); b.addEventListener('click',()=>navigate(t.id==='home'?'home':t.id)); bar.appendChild(b); });
 }
-function renderScreen(){ const s=screens[state.screen]; const scr=document.getElementById('screen'); scr.innerHTML=''; scr.scrollTop=0; if(state.offline) scr.appendChild(el('div',{class:'gbanner'}, icon('alert',16), 'No internet connection — showing last known prices')); scr.appendChild(s.render()); renderTabbar(); syncJump(); }
+function renderScreen(){ const s=screens[state.screen]; const scr=document.getElementById('screen'); scr.innerHTML=''; scr.scrollTop=0; if(state.offline) scr.appendChild(el('div',{class:'gbanner'}, icon('alert',16), 'No internet connection, showing last known prices')); scr.appendChild(s.render()); renderTabbar(); syncJump(); }
 function navigate(id){ if(!screens[id]) return; state.screen=id;
   if(id==='splash'){ renderScreen(); setTimeout(()=>{ if(state.screen==='splash') navigate('intro'); },1300); return; }
   if(id==='results'){ state.resultsPhase='loading'; renderScreen(); setTimeout(()=>{ if(state.screen==='results'){ state.resultsPhase='loaded'; renderScreen(); } },1300); return; }
@@ -814,7 +840,7 @@ document.getElementById('map').addEventListener('click',e=>{ if(e.target.closest
 /* flow-map overlay */
 const MAP=[
   ['A · Onboarding & Auth',[['Splash + version gate',1,'rides|splash'],['Value-prop intro',1,'rides|intro'],['Google sign-in',1,'rides|signin'],['Privacy & terms',1,'rides|signin']]],
-  ['B · Category & connect',[['Category select',1,'rides|connect'],['Connect — Rides',1,'rides|connect'],['Connect — Grocery',1,'grocery|connect'],['Permission disclosure',1,'rides|connect'],['Notifications opt-in',0]]],
+  ['B · Category & connect',[['Category select',1,'rides|connect'],['Connect: Rides',1,'rides|connect'],['Connect: Grocery',1,'grocery|connect'],['Permission disclosure',1,'rides|connect'],['Notifications opt-in',0]]],
   ['C · Rides compare',[['Rides Home',1,'rides|home'],['Location autocomplete',1,'rides|home'],['Comparing',1,'rides|results'],['Rides Results',1,'rides|results'],['Ride detail',1,'rides|results'],['Book hand-off',1,'rides|results']]],
   ['D · Grocery compare',[['Grocery Home (basket)',1,'grocery|home'],['Add item',1,'grocery|home'],['Grocery Results',1,'grocery|results'],['Store detail',1,'grocery|results'],['Order hand-off',1,'grocery|results']]],
   ['E · Earner / points',[['Points wallet',1,'rides|earn'],['Background earner',1,'rides|earn'],['Boost nudge',1,'rides|earn'],['Redeem',1,'rides|redeem']]],
