@@ -6,227 +6,303 @@
 <title>Jedi (codename) — Interactive Prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   Jedi prototype — single-file, dependency-free (fonts optional).
-   Styled to jedi-design/identity.md. Placeholder app name: "Jedi".
-   Checkpoint 1: shell + 3 hero screens (Connect, Search, Results).
+   Jedi prototype v2 — single-file, dependency-free (fonts optional).
+   Styled to jedi-design/identity.md: ink primary + violet accent,
+   Inter, SVG line icons (no emoji), category -> providers IA.
+   Categories fully built: Rides + Grocery.
    ============================================================ */
 :root{
-  --primary:#6C4DF6; --primary-dark:#5436D6; --primary-tint:#F1ECFE;
-  --savings:#10B981; --savings-tint:#E7F9F2;
-  --warn:#F59E0B; --warn-tint:#FEF3E2; --danger:#EF4444;
-  --ink:#1A1726; --muted:#6B6880;
-  --bg:#FBFAFC; --card:#FFFFFF; --border:#ECEAF3;
-  --grad:linear-gradient(135deg,#7C5CFF 0%,#5436D6 100%);
-  --shadow-card:0 2px 8px rgba(76,61,120,.06);
-  --shadow-raised:0 12px 32px rgba(40,30,90,.18);
-  --font:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --btn-bg:#15131F; --btn-fg:#FFFFFF;
+  --violet:#6C4DF6; --violet-tint:#F2EEFE;
+  --savings:#0E9F6E; --savings-tint:#E8F6F0;
+  --warn:#B45309; --warn-tint:#FBF1E4; --danger:#DC2626; --danger-tint:#FCEBEB;
+  --text:#1C1A26; --muted:#6E6B7B;
+  --bg:#FAFAFB; --card:#FFFFFF; --border:#EAEAEF; --track:#F0F0F3;
+  --shadow-card:0 1px 2px rgba(20,16,40,.05), 0 2px 8px rgba(20,16,40,.04);
+  --shadow-raised:0 12px 32px rgba(20,16,40,.16);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 .dark .phone{
-  --ink:#F4F3F8; --muted:#9D9AB3; --bg:#100E1A; --card:#1B1827; --border:#2A2740;
-  --primary:#8B73FF; --primary-tint:#241E3D; --savings-tint:#10271F; --warn-tint:#2A2110;
+  --btn-bg:#FFFFFF; --btn-fg:#15131F; --violet:#8B73FF; --violet-tint:#241E3D;
+  --savings-tint:#10271F; --warn-tint:#2A2110; --danger-tint:#2E1517;
+  --text:#F4F4F7; --muted:#9A98A8; --bg:#0E0E12; --card:#18181F; --border:#2A2A33; --track:#222029;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{
-  font-family:var(--font); color:var(--ink);
-  background:#E9E7F0;
-  background-image:radial-gradient(1200px 600px at 50% -10%, #efeafc 0%, #E9E7F0 60%);
-  display:flex; flex-direction:column; align-items:center; min-height:100%;
+  font-family:var(--font); color:var(--text); background:#EDEDF1;
+  background-image:radial-gradient(1100px 560px at 50% -8%, #e6e3f2 0%, #EDEDF1 58%);
+  display:flex; flex-direction:column; align-items:center; min-height:100%; letter-spacing:-.01em;
 }
 
-/* ---------- top toolbar (outside the phone) ---------- */
-.toolbar{
-  width:100%; display:flex; gap:10px; align-items:center; justify-content:center;
-  padding:14px 16px; flex-wrap:wrap;
-}
-.toolbar .brand{font-weight:800; letter-spacing:-.2px; margin-right:6px; color:#2c2542}
-.toolbar .brand small{font-weight:600; color:#7a7490}
-.tbtn{
-  border:1px solid #d8d4e6; background:#fff; color:#3a3454; font-family:var(--font);
-  font-weight:600; font-size:13px; padding:8px 12px; border-radius:10px; cursor:pointer;
-}
-.tbtn:hover{border-color:var(--primary); color:var(--primary)}
-.tbtn.primary{background:var(--primary); color:#fff; border-color:var(--primary)}
+/* toolbar (outside phone) */
+.toolbar{width:100%; display:flex; gap:10px; align-items:center; justify-content:center; padding:14px 16px; flex-wrap:wrap}
+.toolbar .brand{font-weight:800; margin-right:6px; color:#211d33; display:flex; align-items:center; gap:8px}
+.toolbar .brand small{font-weight:500; color:#807b93}
+.tbtn{border:1px solid #dad6e6; background:#fff; color:#3a3454; font-family:var(--font); font-weight:600; font-size:13px; padding:8px 12px; border-radius:9px; cursor:pointer}
+.tbtn:hover{border-color:var(--violet); color:var(--violet)}
 select.tbtn{padding-right:8px}
 
-/* ---------- phone frame ---------- */
+/* phone */
 .stage{padding:8px 16px 40px}
 .phone{
-  position:relative; width:390px; height:844px; background:var(--bg); color:var(--ink);
-  border-radius:46px; border:11px solid #15131f; overflow:hidden;
-  box-shadow:0 30px 70px rgba(30,20,70,.35);
-  display:flex; flex-direction:column;
+  position:relative; width:390px; height:844px; background:var(--bg); color:var(--text);
+  border-radius:46px; border:11px solid #131119; overflow:hidden;
+  box-shadow:0 30px 70px rgba(25,18,55,.32); display:flex; flex-direction:column;
 }
-.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#15131f;border-radius:0 0 18px 18px;z-index:40}
-.statusbar{
-  height:46px; display:flex; align-items:flex-end; justify-content:space-between;
-  padding:0 26px 6px; font-size:13px; font-weight:700; color:var(--ink); flex:0 0 auto;
-}
-.statusbar .dots{display:flex; gap:6px; align-items:center}
-.screen{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch}
+.notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:148px; height:26px; background:#131119; border-radius:0 0 18px 18px; z-index:40}
+.statusbar{height:46px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 26px 7px; font-size:13px; font-weight:600; flex:0 0 auto}
+.statusbar .right{display:flex; gap:6px; align-items:center}
+.screen{flex:1 1 auto; overflow-y:auto; overflow-x:hidden}
 .screen::-webkit-scrollbar{width:0}
 
-/* ---------- generic UI ---------- */
-.pad{padding:8px 20px 24px}
-.h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin:6px 0 4px}
-.sub{color:var(--muted);font-size:14.5px;line-height:1.45;margin:0 0 16px}
-.label{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-card)}
-.row{display:flex;align-items:center;gap:12px}
+/* type + layout */
+.pad{padding:6px 20px 28px}
+.h1{font-size:23px; font-weight:700; letter-spacing:-.02em; margin:8px 0 4px}
+.sub{color:var(--muted); font-size:14.5px; line-height:1.5; margin:0 0 18px}
+.label{font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted)}
+.card{background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-card)}
+.row{display:flex; align-items:center; gap:12px}
 .spacer{flex:1}
-.btn{
-  font-family:var(--font);font-weight:700;font-size:16px;border:none;cursor:pointer;
-  border-radius:999px;padding:15px 20px;width:100%;color:#fff;background:var(--grad);
-  box-shadow:0 8px 20px rgba(84,54,214,.28); transition:transform .12s ease, filter .12s ease;
-}
-.btn:active{transform:translateY(1px) scale(.995)}
-.btn[disabled]{filter:grayscale(.5) opacity(.5);cursor:not-allowed;box-shadow:none}
-.btn.secondary{background:var(--card);color:var(--ink);border:1px solid var(--border);box-shadow:none}
-.btn.ghost{background:transparent;color:var(--primary);box-shadow:none}
-.btn.danger{background:var(--danger);box-shadow:none}
-.btn.sm{font-size:14px;padding:10px 16px;width:auto}
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--ink);cursor:pointer}
-.chip.tint{background:var(--primary-tint);border-color:transparent;color:var(--primary)}
-.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.3px;padding:4px 8px;border-radius:8px}
-.badge.best{background:var(--savings-tint);color:var(--savings)}
-.badge.surge{background:var(--warn-tint);color:#B45309}
-.badge.fail{background:#FDECEC;color:var(--danger)}
-.dark .badge.fail{background:#3a1d20}
-.icon{width:22px;height:22px;flex:0 0 auto;display:inline-flex}
-.appicon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex:0 0 auto}
-.divider{height:1px;background:var(--border);margin:0 20px}
-.field{display:flex;align-items:center;gap:12px;padding:16px;border-radius:12px;background:var(--bg);border:1px solid var(--border);cursor:pointer}
-.field .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
-.field input{border:none;background:transparent;font-family:var(--font);font-size:16px;font-weight:600;color:var(--ink);width:100%;outline:none}
-.field input::placeholder{color:#9b97ad;font-weight:500}
-.trust{display:flex;gap:10px;align-items:flex-start;background:var(--savings-tint);border-radius:12px;padding:12px 14px;color:#0c7a5b;font-size:13px;font-weight:600;line-height:1.4}
-.dark .trust{color:#5fe3b8}
+.divider{height:1px; background:var(--border)}
+
+/* icons */
+.ic{display:inline-flex; align-items:center; justify-content:center; color:inherit; flex:0 0 auto}
+.ic svg{display:block}
+
+/* buttons */
+.btn{font-family:var(--font); font-weight:600; font-size:16px; border:none; cursor:pointer; border-radius:12px; padding:15px 18px; width:100%; color:var(--btn-fg); background:var(--btn-bg); display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:transform .12s ease, filter .12s ease}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.4; cursor:not-allowed}
+.btn.secondary{background:var(--card); color:var(--text); border:1px solid var(--border)}
+.btn.ghost{background:transparent; color:var(--violet); padding:10px}
+.btn.danger{background:var(--danger); color:#fff}
+.btn.sm{font-size:14px; padding:10px 14px; width:auto; border-radius:10px}
+
+/* chips / segmented / badges */
+.chip{display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; padding:9px 13px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer}
+.chip:active{background:var(--track)}
+.seg{display:flex; gap:4px; background:var(--track); border-radius:12px; padding:4px; margin:2px 0 18px}
+.seg button{flex:1; border:none; background:transparent; font-family:var(--font); font-weight:600; font-size:14px; color:var(--muted); padding:9px 8px; border-radius:9px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:7px}
+.seg button.active{background:var(--card); color:var(--text); box-shadow:0 1px 3px rgba(20,16,40,.10)}
+.badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; letter-spacing:.02em; padding:4px 8px; border-radius:8px}
+.badge.best{background:var(--savings-tint); color:var(--savings)}
+.badge.warn{background:var(--warn-tint); color:var(--warn)}
+.badge.fail{background:var(--danger-tint); color:var(--danger)}
+.badge.accent{background:var(--violet-tint); color:var(--violet)}
+
+/* provider logo chip */
+.plogo{border-radius:11px; display:grid; place-items:center; flex:0 0 auto; overflow:hidden}
+
+/* fields */
+.field{display:flex; align-items:center; gap:12px; padding:15px 14px; cursor:pointer}
+.field .ic{color:var(--muted)}
+.field .val{font-size:16px; font-weight:600; color:var(--text)}
+.field .val.ph{color:#9b97ad; font-weight:500}
+.trust{display:flex; gap:11px; align-items:flex-start; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:13px 14px; color:var(--muted); font-size:13px; font-weight:500; line-height:1.45}
+.trust .ic{color:var(--savings); margin-top:1px}
+
+/* list rows */
+.lrow{display:flex; align-items:center; gap:13px; padding:15px 16px}
+.lrow .nm{font-weight:600; font-size:15.5px}
+.lrow .ds{color:var(--muted); font-size:13px; margin-top:1px}
+.price{font-weight:700; font-size:20px; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.price.lg{font-size:30px; font-weight:800}
+
+/* steppers (grocery) */
+.stepper{display:flex; align-items:center; gap:0; border:1px solid var(--border); border-radius:10px; overflow:hidden}
+.stepper button{width:34px; height:34px; border:none; background:var(--card); color:var(--text); cursor:pointer; display:grid; place-items:center}
+.stepper button:active{background:var(--track)}
+.stepper .q{min-width:30px; text-align:center; font-weight:600; font-size:15px}
+
+/* banner */
+.banner{display:flex; gap:11px; align-items:center; background:var(--savings-tint); color:var(--savings); border-radius:14px; padding:14px 15px; font-weight:600; font-size:14px}
+.banner.warn{background:var(--warn-tint); color:var(--warn)}
+
+/* comparing */
+.comparing{display:flex; align-items:center; gap:12px; padding:15px 16px}
+.spinner{width:18px; height:18px; border-radius:50%; border:2.4px solid var(--border); border-top-color:var(--text); animation:spin .7s linear infinite; flex:0 0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
 .shake{animation:shake .4s}
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-.pop{animation:pop .3s ease}
-@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.fade{animation:fade .26s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
 
-/* ---------- tab bar ---------- */
-.tabbar{flex:0 0 auto;display:flex;background:var(--card);border-top:1px solid var(--border);padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border:none;background:none;font-family:var(--font);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer}
-.tab.active{color:var(--primary)}
-.tab .icon{width:22px;height:22px}
+/* empty state */
+.empty{padding:46px 26px; text-align:center}
+.empty .ic{color:var(--muted); margin-bottom:14px}
+.empty .h{font-size:18px; font-weight:700; margin-bottom:6px}
 
-/* ---------- modal layer (inside phone) ---------- */
-.modal-root{position:absolute;inset:0;z-index:60;pointer-events:none}
-.backdrop{position:absolute;inset:0;background:rgba(20,14,40,.42);opacity:0;transition:opacity .2s;pointer-events:auto}
+/* tab bar */
+.tabbar{flex:0 0 auto; display:flex; background:var(--card); border-top:1px solid var(--border); padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+.tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0; border:none; background:none; font-family:var(--font); font-size:11px; font-weight:600; color:var(--muted); cursor:pointer}
+.tab.active{color:var(--text)}
+
+/* modals */
+.backdrop{position:absolute; inset:0; background:rgba(15,11,30,.42); opacity:0; transition:opacity .2s; pointer-events:auto}
 .backdrop.show{opacity:1}
-.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:10px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:var(--shadow-raised);transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);pointer-events:auto;max-height:90%;overflow-y:auto}
+.sheet{position:absolute; left:0; right:0; bottom:0; background:var(--card); border-radius:22px 22px 0 0; padding:10px 20px calc(22px + env(safe-area-inset-bottom)); box-shadow:var(--shadow-raised); transform:translateY(100%); transition:transform .26s cubic-bezier(.2,.8,.2,1); pointer-events:auto; max-height:92%; overflow-y:auto}
 .sheet.show{transform:translateY(0)}
-.grabber{width:42px;height:5px;border-radius:3px;background:var(--border);margin:6px auto 14px}
-.dialog-wrap{position:absolute;inset:0;display:grid;place-items:center;padding:28px;pointer-events:none}
-.dialog{width:100%;max-width:300px;background:var(--card);border-radius:18px;padding:22px 20px 16px;box-shadow:var(--shadow-raised);transform:scale(.9);opacity:0;transition:all .18s;pointer-events:auto}
-.dialog.show{transform:scale(1);opacity:1}
-.dialog.system{border-radius:14px;border:1px solid var(--border)}
-.dialog h3{margin:0 0 8px;font-size:18px;font-weight:800}
-.dialog p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
-.dialog .actions{display:flex;flex-direction:column;gap:8px}
+.grabber{width:40px; height:5px; border-radius:3px; background:var(--border); margin:6px auto 16px}
+.dialog-wrap{position:absolute; inset:0; display:grid; place-items:center; padding:28px; pointer-events:none}
+.dialog{width:100%; max-width:300px; background:var(--card); border-radius:16px; padding:22px 20px 16px; box-shadow:var(--shadow-raised); transform:scale(.92); opacity:0; transition:all .18s; pointer-events:auto}
+.dialog.show{transform:scale(1); opacity:1}
+.dialog.system{border:1px solid var(--border)}
+.dialog h3{margin:0 0 8px; font-size:17.5px; font-weight:700}
+.dialog p{margin:0 0 18px; color:var(--muted); font-size:14px; line-height:1.5}
+.dialog .actions{display:flex; flex-direction:column; gap:8px}
 .dialog .actions.horiz{flex-direction:row}
 .dialog .actions.horiz .btn{flex:1}
 
-/* checklist (connect sub-flow) */
-.step{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
-.step:last-child{border-bottom:none}
-.step .mark{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:800;font-size:14px}
-.mark.ok{background:var(--savings-tint);color:var(--savings)}
-.mark.pending{background:var(--primary-tint);color:var(--primary)}
-.mark.bad{background:#FDECEC;color:var(--danger)}
-.dark .mark.bad{background:#3a1d20}
-.step .t{font-weight:700;font-size:15px}
-.step .d{color:var(--muted);font-size:12.5px}
+/* checklist (connect) */
+.step{display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--border)}
+.step:last-of-type{border-bottom:none}
+.step .mk{width:26px; height:26px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center}
+.mk.ok{background:var(--savings-tint); color:var(--savings)}
+.mk.pending{background:var(--violet-tint); color:var(--violet)}
+.mk.bad{background:var(--danger-tint); color:var(--danger)}
+.step .t{font-weight:600; font-size:14.5px}
+.step .d{color:var(--muted); font-size:12.5px}
 
 /* toast */
-.toasts{position:absolute;left:16px;right:16px;bottom:96px;z-index:70;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
-.toast{background:#26203b;color:#fff;font-weight:600;font-size:14px;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow-raised);max-width:100%;transform:translateY(10px);opacity:0;transition:all .22s}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.good{background:#0c7a5b}
-.toast.bad{background:#b3261e}
-
-/* results */
-.result{display:flex;align-items:center;gap:14px;padding:16px;cursor:pointer}
-.result:active{background:var(--bg)}
-.price{font-weight:800;font-size:22px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
-.banner{display:flex;gap:10px;align-items:center;background:var(--savings-tint);color:#0c7a5b;border-radius:14px;padding:14px 16px;font-weight:700}
-.dark .banner{color:#5fe3b8}
-.comparing{display:flex;align-items:center;gap:12px;padding:16px}
-.spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--primary);animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.toasts{position:absolute; left:16px; right:16px; bottom:96px; z-index:70; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none}
+.toast{display:flex; align-items:center; gap:9px; background:#211d33; color:#fff; font-weight:500; font-size:14px; padding:12px 15px; border-radius:12px; box-shadow:var(--shadow-raised); transform:translateY(10px); opacity:0; transition:all .22s}
+.toast .ic{color:#cdbbff}
+.toast.show{transform:translateY(0); opacity:1}
+.toast.good{background:#0c7a5b} .toast.good .ic{color:#9af0d2}
+.toast.bad{background:#b3261e} .toast.bad .ic{color:#ffc9c4}
 
 /* map overlay */
-.map{position:fixed;inset:0;background:rgba(16,12,30,.55);z-index:200;display:none;padding:30px;overflow:auto}
+.map{position:fixed; inset:0; background:rgba(14,11,28,.55); z-index:200; display:none; padding:30px; overflow:auto}
 .map.show{display:block}
-.map-inner{max-width:760px;margin:0 auto;background:#fff;border-radius:18px;padding:24px 26px}
-.map h2{margin:0 0 4px}
-.map .muted{color:#6B6880;font-size:14px;margin:0 0 18px}
-.map .grp{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#8a85a0;margin:18px 0 8px}
-.map .node{display:inline-block;margin:4px 6px 4px 0;padding:8px 13px;border-radius:10px;border:1px solid #e5e2ef;font-weight:600;font-size:13.5px;color:#3a3454;background:#faf9fd}
-.map .node.live{border-color:var(--primary);color:var(--primary);background:var(--primary-tint);cursor:pointer}
-.map .node.todo{opacity:.55}
-.placeholder{padding:60px 24px;text-align:center;color:var(--muted)}
-.placeholder .appicon{margin:0 auto 16px;width:56px;height:56px}
+.map-inner{max-width:780px; margin:0 auto; background:#fff; border-radius:18px; padding:24px 26px}
+.map h2{margin:0 0 4px} .map .muted{color:#6E6B7B; font-size:14px; margin:0 0 16px}
+.map .grp{font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#8a85a0; margin:18px 0 8px}
+.map .node{display:inline-block; margin:4px 6px 4px 0; padding:8px 12px; border-radius:9px; border:1px solid #e5e2ef; font-weight:600; font-size:13px; color:#3a3454; background:#faf9fd}
+.map .node.live{border-color:var(--violet); color:var(--violet); background:var(--violet-tint); cursor:pointer}
+.map .node.todo{opacity:.5}
 </style>
 </head>
 <body>
   <div class="toolbar">
-    <span class="brand">Jedi <small>· interactive prototype</small></span>
+    <span class="brand"><span id="brandmark"></span> Jedi <small>· interactive prototype</small></span>
     <select class="tbtn" id="jump" title="Jump to screen"></select>
-    <button class="tbtn" data-tool="map">🗺 Flow map</button>
-    <button class="tbtn" data-tool="dark">🌙 Dark</button>
-    <button class="tbtn" data-tool="reset">↺ Reset</button>
+    <button class="tbtn" data-tool="map">Flow map</button>
+    <button class="tbtn" data-tool="dark">Dark</button>
+    <button class="tbtn" data-tool="reset">Reset</button>
   </div>
 
   <div class="stage">
     <div class="phone" id="phone">
       <div class="notch"></div>
-      <div class="statusbar">
-        <span id="clock">9:41</span>
-        <span class="dots">●●● &nbsp; 􀙇 &nbsp; 100%</span>
-      </div>
+      <div class="statusbar"><span id="clock">9:41</span><span class="right" id="statusicons"></span></div>
       <div class="screen" id="screen"></div>
       <div class="tabbar" id="tabbar"></div>
       <div class="toasts" id="toasts"></div>
-      <div class="modal-root" id="modal-root"></div>
     </div>
   </div>
 
-  <!-- Flow map overlay -->
   <div class="map" id="map">
     <div class="map-inner">
-      <div class="row"><h2 style="flex:1">Jedi — full screen inventory</h2><button class="tbtn" data-tool="map">✕ Close</button></div>
-      <p class="muted">Live screens are tappable. The rest arrive in Checkpoint 2–3 (full Mermaid flow map ships as <code>flow-map.md</code>).</p>
+      <div class="row"><h2 style="flex:1">Jedi — full screen inventory</h2><button class="tbtn" data-tool="map">Close</button></div>
+      <p class="muted">Live screens are tappable. The rest arrive in Checkpoints 2–3 (full Mermaid flow map ships as <code>flow-map.md</code>).</p>
       <div id="map-body"></div>
     </div>
   </div>
 
 <script>
-/* =========================================================================
-   State
-   ========================================================================= */
-const state = {
-  dark:false,
-  connected:new Set(),         // 'uber' | 'lyft'
-  from:'Current location',
-  to:'',
-  screen:'connect',
-  resultsPhase:'loading',
+/* ============================ icons ============================ */
+const ICONS={
+  locate:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  pin:'<path d="M12 21s-6-5.2-6-10a6 6 0 0 1 12 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/>',
+  chevron:'<path d="M9 6l6 6-6 6"/>',
+  chevronDown:'<path d="M6 9l6 6 6-6"/>',
+  shield:'<path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z"/><path d="M9.2 12l2 2 3.6-3.6"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  alert:'<path d="M12 4l9 16H3L12 4z"/><path d="M12 10v4M12 17.4v.2"/>',
+  car:'<path d="M5 17v1.5M19 17v1.5"/><path d="M3.5 16v-3.2l1.7-4A2 2 0 0 1 7 7.5h10a2 2 0 0 1 1.8 1.3l1.7 4V16a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1z"/><path d="M3.8 12.8h16.4"/><circle cx="7.5" cy="16.7" r="1.2"/><circle cx="16.5" cy="16.7" r="1.2"/>',
+  cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M2.5 4H5l2.2 11a1.4 1.4 0 0 0 1.4 1.1h8.2a1.4 1.4 0 0 0 1.4-1.1L21 7.5H6"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-3.6-3.6"/>',
+  user:'<circle cx="12" cy="8.5" r="3.6"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
+  sliders:'<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.1" fill="var(--card)"/><circle cx="15" cy="12" r="2.1" fill="var(--card)"/><circle cx="8" cy="17" r="2.1" fill="var(--card)"/>',
+  arrow:'<path d="M5 12h13M13 6l6 6-6 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  bell:'<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
+  bolt:'<path d="M13 2L4 14h6l-1 8 9-12h-6z"/>',
+  wallet:'<path d="M3 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M16 12.5h.01"/><path d="M3 8l13-2.6V8"/>',
+  store:'<path d="M4 9.5 5.2 5h13.6L20 9.5M5 9.5V19h14V9.5M4 9.5h16"/>',
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
+  refresh:'<path d="M20 11a8 8 0 1 0-1.6 4.8M20 6v5h-5"/>',
+  trendDown:'<path d="M4 7l6 6 4-4 6 6"/><path d="M16 17h4v-4"/>',
+  lock:'<rect x="5" y="10.5" width="14" height="9.5" rx="2.2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  home:'<path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/>',
 };
-const PROVIDERS = {
-  uber:{name:'Uber', color:'#000000', initial:'U', installed:true,  loggedIn:true},
-  lyft:{name:'Lyft', color:'#FF00BF', initial:'L', installed:false, loggedIn:false},
+function icon(name,size=22,style=''){return el('span',{class:'ic',style:`width:${size}px;height:${size}px;${style}`,html:`<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`});}
+
+/* ============================ provider logos ============================ */
+/* official glyphs injected at build time; crafted marks for Curb/Waymo/Kaptyn */
+const BRAND_PATHS={uber:"M0 7.97v4.958c0 1.867 1.302 3.101 3 3.101.826 0 1.562-.316 2.094-.87v.736H6.27V7.97H5.082v4.888c0 1.257-.85 2.106-1.947 2.106-1.11 0-1.946-.827-1.946-2.106V7.971H0zm7.44 0v7.925h1.13v-.725c.521.532 1.257.86 2.06.86a3.006 3.006 0 0 0 3.034-3.01 3.01 3.01 0 0 0-3.033-3.024 2.86 2.86 0 0 0-2.049.861V7.971H7.439zm9.869 2.038c-1.687 0-2.965 1.37-2.965 3 0 1.72 1.334 3.01 3.066 3.01 1.053 0 1.913-.463 2.49-1.233l-.826-.611c-.43.577-.996.847-1.664.847-.973 0-1.753-.7-1.912-1.64h4.697v-.373c0-1.72-1.222-3-2.886-3zm6.295.068c-.634 0-1.098.294-1.381.758v-.713h-1.131v5.774h1.142V12.61c0-.894.544-1.47 1.291-1.47H24v-1.065h-.396zm-6.319.928c.85 0 1.564.588 1.756 1.47H15.52c.203-.882.916-1.47 1.765-1.47zm-6.732.012c1.086 0 1.98.883 1.98 2.004a1.993 1.993 0 0 1-1.98 2.001A1.989 1.989 0 0 1 8.56 13.02a1.99 1.99 0 0 1 1.992-2.004z",lyft:"M4.38 15.883c.036.042.125.135.125.135s-.094.059-.152.086a3.046 3.046 0 0 1-1.28.286C1.593 16.39 0 15.29 0 12.878v-8.78h3.512v9.365c0 .95.306 1.781.867 2.42zM24 11.122V7.61h-1.253c-.524-2.76-3.425-4.574-6.341-3.484-1.624.607-2.943 2.548-2.943 4.282v7.979a1608.8 1608.8 0 0 0 .153 0 3.495 3.495 0 0 0 2.38-1.077c.632-.658.98-1.522.98-2.432h1.463V9.366h-1.463V8.4c0-.375.198-.726.526-.909.9-.5 1.815.143 1.815.996v3.22c0 1.273.48 2.456 1.354 3.329a4.666 4.666 0 0 0 3.178 1.351H24v-3.51a1.17 1.17 0 0 1-1.17-1.17v-.586H24zm-14.927 1.17a.585.585 0 0 1-1.17 0V7.61H4.39v5.853a2.928 2.928 0 0 0 4.83 2.224c-.055.433-.294.792-.69 1.04-.373.234-.857.357-1.402.357a3.83 3.83 0 0 1-1.65-.382s-.093-.044-.21-.11v3.119a6.65 6.65 0 0 0 2.468.484c1.312 0 2.51-.41 3.371-1.155.967-.836 1.478-2.056 1.478-3.528V7.61H9.073v4.683z",instacart:"M15.629 9.619c1.421 1.429 2.58 3.766 1.917 5.152-1.778 3.715-15.04 10.226-16.169 9.1C.252 22.746 6.768 9.476 10.481 7.697c1.388-.66 3.724.51 5.152 1.92l-.005.014v-.012zm7.028-1.566c-.231-.855-.821-1.717-1.7-1.82-1.61-.186-4.151 2.663-3.971 3.339.181.69 3.766 1.875 5.1.915.691-.494.781-1.56.556-2.414l.015-.02zM17.666.158c1.198.324 2.407 1.148 2.551 2.382.261 2.259-3.732 5.819-4.68 5.564-.948-.251-2.618-5.284-1.269-7.162.695-.972 2.201-1.106 3.399-.788v.004h-.001z",walmart:"M21.41818 9.10219c-.22048 0-.39583.12308-.39583.27297l.13393 1.51627c.01478.09132.12669.16185.26197.16185.13555-.00017.24705-.07065.26214-.16185l.13424-1.51627c0-.1499-.17555-.27297-.39645-.27297zM-.00002 10.3184s.59713 2.44699.69242 2.84417c.11123.46362.3117.63419.88954.51913l.37291-1.51718c.0945-.37683.1579-.64553.21866-1.02883h.01065c.04269.3871.10354.65314.18131 1.03017 0 0 .15176.68869.22949 1.05042.07795.36163.29482.5895.86083.46542l.88851-3.3633h-.71735l-.30339 1.45411c-.08155.42325-.15544.75396-.21251 1.14117h-.01022c-.05189-.38347-.11777-.70096-.20072-1.11331l-.31586-1.48197h-.7474l-.3378 1.44462c-.09569.43899-.18528.79337-.2422 1.16745h-.01023c-.05832-.35224-.13599-.7977-.22006-1.22261 0 0-.20074-1.03328-.27115-1.38946zm6.83845 0v3.3633h.68299v-3.3633zm9.6188 0v2.48118c0 .34202.0644.5817.20213.72811.12033.12806.31854.21094.55604.21094.20193 0 .40062-.0383.49426-.07317l-.0088-.53367c-.06968.01711-.1498.03078-.25942.03078-.23265 0-.31068-.149-.31068-.45611v-.94921h.59479v-.64351h-.59481v-.79533zm2.77885 0c-.11446.0027-.24452.08936-.32723.23277-.11062.19096-.09105.40434.03838.47923l1.3799.64254c.0862.03205.20323-.02912.27103-.14597.06814-.11745.0629-.2496-.0088-.3082l-1.24635-.8741c-.03237-.01874-.06877-.02717-.10693-.02627zm4.36427 0c-.03815-.0009-.0745.0075-.1068.02628l-1.2464.8741c-.07112.05846-.07653.1901-.0092.30734.00006.00013.00015.00023.00025.00036.00009.00016.00015.00033.00024.00049.06804.11686.18472.17803.27091.14598l1.38004-.64254c.12997-.0749.14861-.28827.03874-.47923-.08309-.1434-.21333-.23006-.32777-.23277zM5.312 11.0981c-.42444 0-.76136.11916-.94501.22529l.13442.46019c.16808-.10595.43566-.19366.68907-.19366.41954-.0011.48817.23728.48817.39012v.03613c-.9142-.0014-1.49164.31493-1.49164.9598 0 .3937.29399.76266.80512.76266.31466 0 .57778-.12554.73548-.32662h.01545s.10445.4367.67982.26969c-.03022-.18174-.04002-.37546-.04002-.60884v-.89849c0-.57263-.24452-1.07627-1.07086-1.07627zm4.08552 0c-.42739 0-.61944.2166-.7359.40034h-.01016v-.34335h-.65173v2.5266h.68658V12.2c0-.06945.00799-.1429.03223-.2068.05689-.1492.19565-.3237.41725-.3237.27704 0 .40667.2342.40667.57222v1.44h.68585v-1.4996c0-.06636.0091-.14622.02859-.20486.05639-.16969.20602-.30776.41201-.30776.28086 0 .41567.23012.41567.62788v1.38434h.68633v-1.48805c0-.78478-.39845-1.09555-.8483-1.09555-.19922 0-.35646.04996-.49863.13722-.1195.07334-.22655.17753-.32006.3147h-.0101c-.10853-.27228-.36375-.45192-.6963-.45192zm3.7702 0c-.42435 0-.76113.11916-.94495.22529l.13454.46019c.16792-.10595.43572-.19366.689-.19366.41926-.0011.48806.23728.48806.39012v.03613c-.91407-.0014-1.49164.31494-1.49164.9598 0 .3937.29418.76266.8056.76266.31441 0 .57759-.12554.735-.32662h.01557s.10437.4367.67982.26969c-.03027-.18174-.03996-.37546-.03996-.60884v-.89849c0-.57263-.24458-1.07627-1.07104-1.07627zm2.85129 0c-.26292 0-.56205.1697-.68761.53354h-.0191v-.47655h-.6181v2.5266h.70453V12.388c0-.06985.0042-.1307.01527-.1865.0521-.27102.25945-.44425.55696-.44425.08167 0 .1401.0088.20333.018v-.66151c-.05302-.0107-.0893-.01563-.15528-.01563zm4.35946 1.22067c-.01785-.00025-.03513.0026-.05134.0087l-1.3799.6418c-.12943.07519-.149.28868-.03838.47984.11028.1906.30469.28118.43415.20644l1.24634-.87349c.0717-.05929.07696-.19127.0088-.30862l.0006.00025c-.05507-.09558-.14292-.15388-.22027-.15492zm2.07955 0c-.07727.001-.1649.05934-.22012.15491l.00049-.00025c-.06781.11735-.06254.24934.0088.30862l1.2464.87349c.12921.07474.3238-.01584.43458-.20644.10986-.19116.09122-.40466-.03875-.47983l-1.38012-.64181c-.0162-.0061-.03344-.0089-.05128-.0087zm-16.75741.14518v.31519c0 .0466-.00406.09467-.01697.13673-.05286.17506-.23415.32303-.46086.32303-.18901 0-.33916-.1073-.33916-.33422 0-.34707.38204-.443.81699-.44073zm7.85577 0v.31519c0 .0466-.0041.09467-.0169.13673-.05287.17506-.23421.32303-.46093.32303-.18905 0-.3392-.1073-.3392-.33422 0-.34707.38209-.443.81703-.44073zm7.86138.48324c-.13506.00016-.24672.07024-.26148.16137l-.13393 1.5162c0 .15015.17535.27304.39583.27304.2209 0 .39645-.12289.39645-.27303l-.13424-1.51621c-.01509-.09113-.12659-.1612-.26214-.16137z",doordash:"M23.071 8.409a6.09 6.09 0 00-5.396-3.228H.584A.589.589 0 00.17 6.184L3.894 9.93a1.752 1.752 0 001.242.516h12.049a1.554 1.554 0 11.031 3.108H8.91a.589.589 0 00-.415 1.003l3.725 3.747a1.75 1.75 0 001.242.516h3.757c4.887 0 8.584-5.225 5.852-10.413",amazon:"M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 7.594 3.166 11.87 3.166 2.852 0 5.668-.533 8.447-1.595l.315-.14c.138-.06.234-.1.293-.13.226-.088.39-.046.525.13.12.174.09.336-.12.48-.256.19-.6.41-1.006.654-1.244.743-2.64 1.316-4.185 1.726a17.617 17.617 0 01-10.951-.577 17.88 17.88 0 01-5.43-3.35c-.1-.074-.151-.15-.151-.22 0-.047.021-.09.051-.13zm6.565-6.218c0-1.005.247-1.863.743-2.577.495-.71 1.17-1.25 2.04-1.615.796-.335 1.756-.575 2.912-.72.39-.046 1.033-.103 1.92-.174v-.37c0-.93-.105-1.558-.3-1.875-.302-.43-.78-.65-1.44-.65h-.182c-.48.046-.896.196-1.246.46-.35.27-.575.63-.675 1.096-.06.3-.206.465-.435.51l-2.52-.315c-.248-.06-.372-.18-.372-.39 0-.046.007-.09.022-.15.247-1.29.855-2.25 1.82-2.88.976-.616 2.1-.975 3.39-1.05h.54c1.65 0 2.957.434 3.888 1.29.135.15.27.3.405.48.12.165.224.314.283.45.075.134.15.33.195.57.06.254.105.42.135.51.03.104.062.3.076.615.01.313.02.493.02.553v5.28c0 .376.06.72.165 1.036.105.313.21.54.315.674l.51.674c.09.136.136.256.136.36 0 .12-.06.226-.18.314-1.2 1.05-1.86 1.62-1.963 1.71-.165.135-.375.15-.63.045a6.062 6.062 0 01-.526-.496l-.31-.347a9.391 9.391 0 01-.317-.42l-.3-.435c-.81.886-1.603 1.44-2.4 1.665-.494.15-1.093.227-1.83.227-1.11 0-2.04-.343-2.76-1.034-.72-.69-1.08-1.665-1.08-2.94l-.05-.076zm3.753-.438c0 .566.14 1.02.425 1.364.285.34.675.512 1.155.512.045 0 .106-.007.195-.02.09-.016.134-.023.166-.023.614-.16 1.08-.553 1.424-1.178.165-.28.285-.58.36-.91.09-.32.12-.59.135-.8.015-.195.015-.54.015-1.005v-.54c-.84 0-1.484.06-1.92.18-1.275.36-1.92 1.17-1.92 2.43l-.035-.02zm9.162 7.027c.03-.06.075-.11.132-.17.362-.243.714-.41 1.05-.5a8.094 8.094 0 011.612-.24c.14-.012.28 0 .41.03.65.06 1.05.168 1.172.33.063.09.099.228.099.39v.15c0 .51-.149 1.11-.424 1.8-.278.69-.664 1.248-1.156 1.68-.073.06-.14.09-.197.09-.03 0-.06 0-.09-.012-.09-.044-.107-.12-.064-.24.54-1.26.806-2.143.806-2.64 0-.15-.03-.27-.087-.344-.145-.166-.55-.257-1.224-.257-.243 0-.533.016-.87.046-.363.045-.7.09-1 .135-.09 0-.148-.014-.18-.044-.03-.03-.036-.047-.02-.077 0-.017.006-.03.02-.063v-.06z",target:"M12.0005 0C18.627 0 24 5.373 24 12.0005 24 18.627 18.627 24 11.9995 24 5.373 24 0 18.627 0 11.9995 0 5.373 5.373 0 12.0005 0zm0 19.826a7.8265 7.8265 0 10-.001-15.652C7.7133 4.2246 4.2653 7.7136 4.2653 12c0 4.2864 3.448 7.7754 7.7342 7.826h.001zm0-3.9853a3.8402 3.8402 0 110-7.6803c2.1204.0006 3.839 1.7197 3.839 3.8401s-1.7186 3.8396-3.839 3.8402z"};
+const LOGOS={
+  uber:{name:'Uber',bg:'#000',fg:'#fff',path:BRAND_PATHS.uber,installed:true,loggedIn:true},
+  lyft:{name:'Lyft',bg:'#fff',fg:'#FF00BF',border:true,path:BRAND_PATHS.lyft,installed:true,loggedIn:true},
+  curb:{name:'Curb',bg:'#111',installed:true,loggedIn:false,mark:s=>`<span style="font-weight:800;font-size:${Math.round(s*0.46)}px;color:#F7B500;letter-spacing:-.5px">C</span>`},
+  waymo:{name:'Waymo',bg:'linear-gradient(135deg,#1A73E8,#00C2A8)',installed:false,loggedIn:false,mark:s=>`<span style="font-weight:800;font-size:${Math.round(s*0.44)}px;color:#fff">W</span>`},
+  kaptyn:{name:'Kaptyn',bg:'#0E1B2A',installed:false,loggedIn:false,mark:s=>`<span style="font-weight:800;font-size:${Math.round(s*0.46)}px;color:#27C2A0">K</span>`},
+  instacart:{name:'Instacart',bg:'#fff',fg:'#FF7009',border:true,path:BRAND_PATHS.instacart,installed:true,loggedIn:true},
+  walmart:{name:'Walmart',bg:'#0071DC',fg:'#FFC220',path:BRAND_PATHS.walmart,installed:true,loggedIn:true},
+  doordash:{name:'DoorDash',bg:'#FF3008',fg:'#fff',path:BRAND_PATHS.doordash,installed:true,loggedIn:false},
+  amazon:{name:'Amazon Fresh',bg:'#000',fg:'#FF9900',path:BRAND_PATHS.amazon,installed:true,loggedIn:true},
+  target:{name:'Target',bg:'#fff',fg:'#CC0000',border:true,path:BRAND_PATHS.target,installed:false,loggedIn:false},
+};
+function plogo(id,size=42){
+  const p=LOGOS[id];
+  const w=el('div',{class:'plogo',style:`width:${size}px;height:${size}px;background:${p.bg};${p.border?'border:1px solid var(--border);':''}`});
+  if(p.path) w.innerHTML=`<svg viewBox="0 0 24 24" width="${Math.round(size*0.56)}" height="${Math.round(size*0.56)}" fill="${p.fg}"><path d="${p.path}"/></svg>`;
+  else if(p.mark) w.innerHTML=p.mark(size);
+  return w;
+}
+
+/* ============================ categories + data ============================ */
+const CATEGORIES={
+  rides:{label:'Rides',icon:'car',kind:'route',providers:['uber','lyft','curb','waymo','kaptyn']},
+  grocery:{label:'Grocery',icon:'cart',kind:'basket',providers:['instacart','walmart','doordash','amazon','target']},
+};
+const RIDE_PRICES={
+  uber:{type:'UberX',price:18.40,eta:'4 min',alt:{type:'Uber Comfort',price:24.70,eta:'5 min',surge:'1.4×'}},
+  lyft:{type:'Lyft',price:19.10,eta:'3 min'},
+  kaptyn:{type:'Kaptyn EV',price:21.00,eta:'6 min'},
+  curb:{type:'Curb Taxi',price:22.50,eta:'7 min'},
+  waymo:{type:'Waymo One',price:26.00,eta:'9 min',tag:'Driverless'},
+};
+const GROCERY_STORES={
+  walmart:{total:38.50,fee:0,avail:12},
+  amazon:{total:42.10,fee:0,avail:11},
+  target:{total:41.20,fee:3.99,avail:12},
+  instacart:{total:44.80,fee:3.99,avail:12},
+  doordash:{total:47.30,fee:4.99,avail:10},
+};
+const DEFAULT_BASKET=[
+  {name:'Whole milk, 1 gal',qty:1},{name:'Large eggs, dozen',qty:1},{name:'Sourdough loaf',qty:1},
+  {name:'Bananas, bunch',qty:2},{name:'Ground coffee, 12oz',qty:1},
+];
+
+/* ============================ state ============================ */
+const state={
+  dark:false, category:'rides',
+  connected:{rides:new Set(), grocery:new Set()},
+  from:'Current location', to:'',
+  basket:DEFAULT_BASKET.map(x=>({...x})),
+  resultsPhase:'loading', screen:'connect',
 };
 
-/* =========================================================================
-   Tiny element helper
-   ========================================================================= */
-function el(tag, attrs={}, ...kids){
+/* ============================ el helper ============================ */
+function el(tag,attrs={},...kids){
   const n=document.createElement(tag);
   for(const k in attrs){
     if(k==='class') n.className=attrs[k];
@@ -234,34 +310,25 @@ function el(tag, attrs={}, ...kids){
     else if(k.startsWith('on')&&typeof attrs[k]==='function') n.addEventListener(k.slice(2),attrs[k]);
     else n.setAttribute(k,attrs[k]);
   }
-  kids.flat().forEach(c=>n.appendChild(typeof c==='string'?document.createTextNode(c):c));
+  kids.flat().forEach(c=>{ if(c==null||c===false) return; n.appendChild(typeof c==='string'?document.createTextNode(c):c); });
   return n;
 }
 
-/* =========================================================================
-   Modal primitives: toast / alert dialog / bottom sheet
-   ========================================================================= */
-const modalRoot=()=>document.getElementById('modal-root');
-
+/* ============================ modals ============================ */
 function toast(msg,kind=''){
-  const t=el('div',{class:'toast '+kind},msg);
+  const t=el('div',{class:'toast '+kind}, icon(kind==='good'?'check':kind==='bad'?'alert':'info',18), el('span',{},msg));
   document.getElementById('toasts').appendChild(t);
   requestAnimationFrame(()=>t.classList.add('show'));
-  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),250);},2200);
+  setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),250);},2300);
 }
-
 function closeModal(wrap){
-  const back=wrap.querySelector('.backdrop'); if(back) back.classList.remove('show');
-  const panel=wrap.querySelector('.sheet,.dialog'); if(panel) panel.classList.remove('show');
-  setTimeout(()=>wrap.remove(),240);   // remove the modal wrap only — never its parent (#phone)
+  const b=wrap.querySelector('.backdrop'); if(b) b.classList.remove('show');
+  const p=wrap.querySelector('.sheet,.dialog'); if(p) p.classList.remove('show');
+  setTimeout(()=>wrap.remove(),240);
 }
-
-/* showAlert({title, body, system, actions:[{label,kind,close,onClick}]}) */
 function showAlert(opt){
-  const wrap=el('div',{class:'modal-root'});
-  const back=el('div',{class:'backdrop'});
-  const host=el('div',{class:'dialog-wrap'});
-  const horiz=opt.actions && opt.actions.length===2;
+  const wrap=el('div',{}); const back=el('div',{class:'backdrop'}); const host=el('div',{class:'dialog-wrap'});
+  const horiz=opt.actions&&opt.actions.length===2;
   const dlg=el('div',{class:'dialog'+(opt.system?' system':'')});
   dlg.appendChild(el('h3',{},opt.title||''));
   if(opt.body) dlg.appendChild(el('p',{html:opt.body}));
@@ -271,396 +338,318 @@ function showAlert(opt){
     b.addEventListener('click',()=>{ if(a.close!==false) closeModal(wrap); if(a.onClick) a.onClick(); });
     acts.appendChild(b);
   });
-  dlg.appendChild(acts); host.appendChild(dlg);
-  wrap.appendChild(back); wrap.appendChild(host);
+  dlg.appendChild(acts); host.appendChild(dlg); wrap.appendChild(back); wrap.appendChild(host);
   document.getElementById('phone').appendChild(wrap);
-  requestAnimationFrame(()=>{back.classList.add('show');dlg.classList.add('show');});
+  requestAnimationFrame(()=>{back.classList.add('show'); dlg.classList.add('show');});
   return wrap;
 }
-
-/* showSheet({title, build:(sheetEl,close)=>{...}}) */
 function showSheet(opt){
-  const wrap=el('div',{class:'modal-root'});
-  const back=el('div',{class:'backdrop'});
-  const sheet=el('div',{class:'sheet'});
+  const wrap=el('div',{}); const back=el('div',{class:'backdrop'}); const sheet=el('div',{class:'sheet'});
   sheet.appendChild(el('div',{class:'grabber'}));
-  if(opt.title) sheet.appendChild(el('div',{class:'h1',style:'font-size:20px;margin:0 0 12px'},opt.title));
-  const close=()=>closeModal(wrap);
-  back.addEventListener('click',close);
+  if(opt.title) sheet.appendChild(el('div',{style:'font-size:19px;font-weight:700;margin:0 0 14px'},opt.title));
+  const close=()=>closeModal(wrap); back.addEventListener('click',close);
   if(opt.build) opt.build(sheet,close);
   wrap.appendChild(back); wrap.appendChild(sheet);
   document.getElementById('phone').appendChild(wrap);
-  requestAnimationFrame(()=>{back.classList.add('show');sheet.classList.add('show');});
+  requestAnimationFrame(()=>{back.classList.add('show'); sheet.classList.add('show');});
   return {wrap,sheet,close};
 }
 
-/* =========================================================================
-   Provider connect sub-flow (the accessibility / permission surface)
-   ========================================================================= */
+/* ============================ shared bits ============================ */
+function money(n){return '$'+n.toFixed(2);}
+function segmented(){
+  const seg=el('div',{class:'seg'});
+  Object.keys(CATEGORIES).forEach(key=>{
+    const c=CATEGORIES[key];
+    const b=el('button',{class:state.category===key?'active':''}, icon(c.icon,18), c.label);
+    b.addEventListener('click',()=>{ state.category=key; renderScreen(); });
+    seg.appendChild(b);
+  });
+  const more=el('button',{}, icon('plus',18), 'More');
+  more.addEventListener('click',()=>moreCategories());
+  seg.appendChild(more);
+  return seg;
+}
+function moreCategories(){
+  showSheet({title:'More categories', build:(sheet)=>{
+    sheet.appendChild(el('div',{class:'sub'},'Jedi is category-first — each new vertical is just a provider set. These are next:'));
+    [['store','Food delivery','Uber Eats · DoorDash · Grubhub'],['cart','Pharmacy','CVS · Walgreens'],['pin','Stays','Booking · Airbnb'],['car','Flights','Google Flights · Kayak']].forEach(([ic,t,d])=>{
+      const r=el('div',{class:'lrow',style:'padding:13px 0'}, icon(ic,22,'color:var(--muted)'),
+        el('div',{style:'flex:1'}, el('div',{class:'nm'},t), el('div',{class:'ds'},d)),
+        el('span',{class:'badge accent'},'Coming soon'));
+      sheet.appendChild(r);
+    });
+  }});
+}
+
+/* ============================ connect sub-flow ============================ */
 function connectFlow(id){
-  const p=PROVIDERS[id];
+  const p=LOGOS[id];
   showSheet({title:'Connect '+p.name, build:(sheet,close)=>{
     const list=el('div',{});
-    function step(mark,markClass,t,d,action){
-      const s=el('div',{class:'step'});
-      s.appendChild(el('div',{class:'mark '+markClass},mark));
-      const tx=el('div',{style:'flex:1'}); tx.appendChild(el('div',{class:'t'},t)); tx.appendChild(el('div',{class:'d'},d));
-      s.appendChild(tx);
-      if(action) s.appendChild(action);
-      return s;
-    }
-    // Step 1 — installed?
+    const step=(mk,cls,t,d,action)=>{ const s=el('div',{class:'step'}); s.appendChild(el('div',{class:'mk '+cls},icon(mk,16))); const tx=el('div',{style:'flex:1'}); tx.appendChild(el('div',{class:'t'},t)); tx.appendChild(el('div',{class:'d'},d)); s.appendChild(tx); if(action) s.appendChild(action); return s; };
+    if(p.installed){ list.appendChild(step('check','ok',p.name+' is installed','Found on your device')); }
+    else{ const b=el('button',{class:'btn sm'},'Install'); b.addEventListener('click',()=>toast('Opening App Store…')); list.appendChild(step('alert','bad',p.name+' isn’t installed','Install it, then return',b)); }
     if(p.installed){
-      list.appendChild(step('✓','ok',p.name+' is installed','Found on your device'));
-    }else{
-      const installBtn=el('button',{class:'btn sm', style:'width:auto'},'Install');
-      installBtn.addEventListener('click',()=>{ toast('Opening App Store…'); });
-      list.appendChild(step('!','bad',p.name+' isn’t installed','Install it, then come back',installBtn));
+      if(p.loggedIn){ list.appendChild(step('check','ok','You’re signed in to '+p.name,'Using your existing account')); }
+      else{ const b=el('button',{class:'btn sm'},'Open'); b.addEventListener('click',()=>toast('Opening '+p.name+' to sign in…')); list.appendChild(step('user','pending','Sign in to '+p.name,'Open the app and log in',b)); }
     }
-    // Step 2 — logged in?
-    if(p.installed){
-      if(p.loggedIn){
-        list.appendChild(step('✓','ok','You’re logged in to '+p.name,'Using your existing account'));
-      }else{
-        const loginBtn=el('button',{class:'btn sm',style:'width:auto'},'Open '+p.name);
-        loginBtn.addEventListener('click',()=>toast('Opening '+p.name+' to log in…'));
-        list.appendChild(step('→','pending','Log in to '+p.name,'Open the app and sign in',loginBtn));
-      }
-    }
-    // Step 3 — accessibility permission
-    const grantBtn=el('button',{class:'btn sm',style:'width:auto'},'Grant');
-    const permStep=step('3','pending','Allow Jedi to read prices','Needs Accessibility permission',grantBtn);
-    list.appendChild(permStep);
+    const grant=el('button',{class:'btn sm'},'Grant');
+    list.appendChild(step('lock','pending','Allow Jedi to read prices','Requires Accessibility permission',grant));
     sheet.appendChild(list);
-
-    sheet.appendChild(el('div',{class:'trust',style:'margin-top:16px'},
-      el('span',{},'🔒'),
-      el('span',{},'Your login stays on your device. Jedi reads only the prices shown on screen — never your password.')));
-
-    grantBtn.addEventListener('click',()=>{
+    sheet.appendChild(el('div',{class:'trust',style:'margin-top:16px'}, icon('shield',18), el('span',{},'Your sign-in stays on your device. Jedi reads only the prices shown on screen — never your password.')));
+    grant.addEventListener('click',()=>{
       if(!p.installed){ toast('Install '+p.name+' first','bad'); return; }
-      // OS-style disclosure
-      showAlert({
-        system:true,
-        title:'Use Jedi with '+p.name+'?',
-        body:'Jedi will read on-screen prices from '+p.name+' to compare fares. It runs only when you ask for a comparison or during a background price check. <b>It cannot see your password.</b>',
+      showAlert({system:true,title:'Use Jedi with '+p.name+'?',
+        body:'Jedi will read on-screen prices from '+p.name+' to compare options. It runs only when you ask for a comparison or during a background price check. <b>It cannot see your password.</b>',
         actions:[
-          {label:'Deny',kind:'secondary',onClick:()=>{
-            showAlert({title:'Permission needed',
-              body:'Without Accessibility, Jedi can’t read '+p.name+'’s prices. You can turn it on later in Settings.',
-              actions:[{label:'Not now',kind:'secondary'},{label:'Try again',kind:'primary',onClick:()=>{grantBtn.click();}}]});
-          }},
-          {label:'Allow',kind:'primary',onClick:()=>{
-            state.connected.add(id);
-            close();
-            toast(p.name+' connected 🎉','good');
-            renderScreen();
-          }},
-        ]
-      });
+          {label:'Deny',kind:'secondary',onClick:()=>showAlert({title:'Permission needed',body:'Without Accessibility, Jedi can’t read '+p.name+'’s prices. You can enable it later in Settings.',actions:[{label:'Not now',kind:'secondary'},{label:'Try again',kind:'primary',onClick:()=>grant.click()}]})},
+          {label:'Allow',kind:'primary',onClick:()=>{ state.connected[state.category].add(id); close(); toast(p.name+' connected','good'); renderScreen(); }},
+        ]});
     });
   }});
 }
 
-/* =========================================================================
-   SCREENS
-   ========================================================================= */
+/* ============================ screens ============================ */
 const screens={};
 
-/* ----- Connect providers (hero) ----- */
-screens.connect={title:'Connect apps',tab:null,back:false,render(){
+/* connect (category-scoped) */
+screens.connect={tab:null,back:false,render(){
+  const cat=CATEGORIES[state.category];
   const wrap=el('div',{class:'pad'});
-  wrap.appendChild(el('div',{class:'appicon',style:'background:var(--grad);margin:6px 0 14px'},'J'));
   wrap.appendChild(el('div',{class:'h1'},'Connect your apps'));
-  wrap.appendChild(el('div',{class:'sub'},'Jedi compares prices using the ride apps you already have. Connect at least one to start.'));
-  wrap.appendChild(el('div',{class:'trust',style:'margin-bottom:16px'},
-    el('span',{},'🔒'),
-    el('span',{},'We never see your passwords. Your accounts stay yours — Jedi just reads the prices.')));
-
+  wrap.appendChild(el('div',{class:'sub'},'Jedi compares prices using apps you already have. Choose a category, then connect at least one provider.'));
+  wrap.appendChild(segmented());
+  wrap.appendChild(el('div',{class:'trust',style:'margin-bottom:16px'}, icon('shield',18), el('span',{},'We never see your passwords. Your accounts stay yours — Jedi only reads prices.')));
   const card=el('div',{class:'card'});
-  Object.keys(PROVIDERS).forEach((id,i)=>{
-    const p=PROVIDERS[id]; const isOn=state.connected.has(id);
-    const r=el('div',{class:'result',style:'cursor:default'});
-    r.appendChild(el('div',{class:'appicon',style:'background:'+p.color+';width:40px;height:40px;font-size:16px'},p.initial));
-    const mid=el('div',{style:'flex:1'});
-    mid.appendChild(el('div',{style:'font-weight:700;font-size:16px'},p.name));
-    mid.appendChild(el('div',{class:'d',style:'color:var(--muted);font-size:13px'}, isOn?'Connected':(p.installed?'Tap to connect':'Not installed')));
+  cat.providers.forEach((id,i)=>{
+    const p=LOGOS[id]; const on=state.connected[state.category].has(id);
+    const r=el('div',{class:'lrow'}); r.appendChild(plogo(id,42));
+    const mid=el('div',{style:'flex:1'}); mid.appendChild(el('div',{class:'nm'},p.name)); mid.appendChild(el('div',{class:'ds'}, on?'Connected':(p.installed?(p.loggedIn?'Ready to connect':'Sign-in required'):'Not installed')));
     r.appendChild(mid);
-    if(isOn){ r.appendChild(el('span',{class:'badge best'},'✓ Connected')); }
-    else{
-      const b=el('button',{class:'btn sm',style:'width:auto'},'Connect');
-      b.addEventListener('click',()=>connectFlow(id));
-      r.appendChild(b);
-    }
-    card.appendChild(r);
-    if(i<Object.keys(PROVIDERS).length-1) card.appendChild(el('div',{class:'divider'}));
+    if(on){ r.appendChild(el('span',{class:'badge best'}, icon('check',13), 'Connected')); }
+    else{ const b=el('button',{class:'btn sm'},'Connect'); b.addEventListener('click',()=>connectFlow(id)); r.appendChild(b); }
+    card.appendChild(r); if(i<cat.providers.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
   });
   wrap.appendChild(card);
-
-  const cont=el('button',{class:'btn',style:'margin-top:22px'}, state.connected.size?'Continue':'Connect an app to continue');
-  if(!state.connected.size) cont.setAttribute('disabled','');
-  cont.addEventListener('click',()=>{ if(state.connected.size) navigate('search'); });
+  const n=state.connected[state.category].size;
+  const cont=el('button',{class:'btn',style:'margin-top:22px'}, n?'Continue':'Connect a provider to continue');
+  if(!n) cont.setAttribute('disabled','');
+  cont.addEventListener('click',()=>{ if(n) navigate('home'); });
   wrap.appendChild(cont);
-  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:13px'},'More providers (Uber Eats, DoorDash, Instacart) coming soon.'));
   return wrap;
 }};
 
-/* ----- Home / Search (hero) ----- */
-screens.search={title:'Search',tab:'search',back:false,render(){
+/* home (category-aware) */
+screens.home={tab:'home',back:false,render(){
+  const cat=CATEGORIES[state.category];
   const wrap=el('div',{class:'pad'});
-  const top=el('div',{class:'row',style:'margin:4px 0 18px'});
-  top.appendChild(el('div',{},el('div',{class:'label'},'Good morning'),el('div',{style:'font-weight:800;font-size:20px'},'Where to?')));
+  const top=el('div',{class:'row',style:'margin:6px 0 16px'});
+  top.appendChild(el('div',{}, el('div',{class:'label'},'Good morning'), el('div',{style:'font-weight:700;font-size:20px;letter-spacing:-.02em'}, cat.kind==='route'?'Where to?':'Your basket')));
   top.appendChild(el('div',{class:'spacer'}));
-  top.appendChild(el('div',{class:'appicon',style:'background:var(--primary-tint);color:var(--primary);width:38px;height:38px;font-size:15px'},'T'));
+  top.appendChild(el('div',{class:'plogo',style:'width:38px;height:38px;background:var(--violet-tint);color:var(--violet)'}, icon('user',20)));
   wrap.appendChild(top);
+  wrap.appendChild(segmented());
 
-  const card=el('div',{class:'card',style:'padding:8px'});
-  const fromF=el('div',{class:'field',style:'border:none;background:transparent'},
-    el('span',{class:'dot',style:'background:var(--savings)'}),
-    el('input',{value:state.from,placeholder:'From',readonly:'true'}));
-  fromF.addEventListener('click',()=>locationSheet('from'));
-  const toF=el('div',{class:'field',style:'border:none;background:transparent'},
-    el('span',{class:'dot',style:'background:var(--primary)'}),
-    el('input',{value:state.to,placeholder:'Where to?',readonly:'true'}));
-  toF.addEventListener('click',()=>locationSheet('to'));
-  card.appendChild(fromF);
-  card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
-  card.appendChild(toF);
-  wrap.appendChild(card);
+  if(state.connected[state.category].size===0){
+    const e=el('div',{class:'empty card'});
+    e.appendChild(icon(cat.icon,40));
+    e.appendChild(el('div',{class:'h'},'No '+cat.label.toLowerCase()+' apps connected'));
+    e.appendChild(el('div',{class:'sub',style:'margin-bottom:18px'},'Connect at least one '+cat.label.toLowerCase()+' provider to start comparing prices.'));
+    const b=el('button',{class:'btn',style:'width:auto;margin:0 auto'},'Connect '+cat.label.toLowerCase()+' apps'); b.addEventListener('click',()=>navigate('connect'));
+    e.appendChild(b); wrap.appendChild(e); return wrap;
+  }
 
-  const chips=el('div',{class:'row',style:'gap:8px;margin:16px 0 6px;flex-wrap:wrap'});
-  [['🏠 Home','123 Pine St'],['💼 Work','Salesforce Tower'],['✈️ SFO','SF Airport']].forEach(([lbl,val])=>{
-    const c=el('div',{class:'chip'},lbl);
-    c.addEventListener('click',()=>{state.to=val; renderScreen();});
-    chips.appendChild(c);
-  });
-  wrap.appendChild(el('div',{class:'label',style:'margin-top:4px'},'Saved & recent'));
-  wrap.appendChild(chips);
-
-  const cta=el('button',{class:'btn',style:'margin-top:24px'},'Compare prices');
-  cta.addEventListener('click',()=>{
-    if(!state.to){ toF.classList.add('shake'); setTimeout(()=>toF.classList.remove('shake'),450); toast('Enter a destination first','bad'); return; }
-    if(state.connected.size===0){
-      showAlert({title:'Connect an app first',body:'Jedi needs at least one ride app connected to compare prices.',
-        actions:[{label:'Not now',kind:'secondary'},{label:'Connect',kind:'primary',onClick:()=>navigate('connect')}]});
-      return;
-    }
-    navigate('results');
-  });
-  wrap.appendChild(cta);
+  if(cat.kind==='route') renderRidesHome(wrap); else renderGroceryHome(wrap);
   return wrap;
 }};
 
+function renderRidesHome(wrap){
+  const card=el('div',{class:'card'});
+  const f=(ic, iccolor,val,ph,which)=>{ const r=el('div',{class:'field'}); r.appendChild(icon(ic,20,'color:'+iccolor)); r.appendChild(el('div',{class:'val'+(val?'':' ph')},val||ph)); r.addEventListener('click',()=>locationSheet(which)); return r; };
+  card.appendChild(f('locate','var(--savings)',state.from,'Pickup','from'));
+  card.appendChild(el('div',{class:'divider',style:'margin:0 14px'}));
+  card.appendChild(f('pin','var(--violet)',state.to,'Where to?','to'));
+  wrap.appendChild(card);
+  const chips=el('div',{class:'row',style:'gap:8px;margin:16px 0 4px;flex-wrap:wrap'});
+  [['home','Home','123 Pine St'],['user','Work','Salesforce Tower'],['pin','SFO','SF Airport']].forEach(([ic,lbl,val])=>{ const c=el('div',{class:'chip'}, icon(ic,17), lbl); c.addEventListener('click',()=>{state.to=val; renderScreen();}); chips.appendChild(c); });
+  wrap.appendChild(el('div',{class:'label',style:'margin-top:6px'},'Saved & recent')); wrap.appendChild(chips);
+  const cta=el('button',{class:'btn',style:'margin-top:24px'}, 'Compare prices', icon('arrow',20));
+  cta.addEventListener('click',()=>{ if(!state.to){ toast('Enter a destination first','bad'); return; } navigate('results'); });
+  wrap.appendChild(cta);
+}
+
+function renderGroceryHome(wrap){
+  wrap.appendChild(el('div',{class:'label',style:'margin-bottom:8px'},'Weekly essentials'));
+  const card=el('div',{class:'card'});
+  state.basket.forEach((it,i)=>{
+    const r=el('div',{class:'lrow'});
+    r.appendChild(el('div',{style:'flex:1'}, el('div',{class:'nm'},it.name)));
+    const st=el('div',{class:'stepper'});
+    const minus=el('button',{},icon('minus',16)); minus.addEventListener('click',()=>{ it.qty=Math.max(0,it.qty-1); if(it.qty===0) state.basket.splice(state.basket.indexOf(it),1); renderScreen(); });
+    const plus=el('button',{},icon('plus',16)); plus.addEventListener('click',()=>{ it.qty++; renderScreen(); });
+    st.appendChild(minus); st.appendChild(el('div',{class:'q'},String(it.qty))); st.appendChild(plus);
+    r.appendChild(st); card.appendChild(r); if(i<state.basket.length-1) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
+  });
+  wrap.appendChild(card);
+  const add=el('button',{class:'btn secondary',style:'margin-top:12px'}, icon('plus',18), 'Add item');
+  add.addEventListener('click',()=>addItemSheet());
+  wrap.appendChild(add);
+  const cta=el('button',{class:'btn',style:'margin-top:14px'}, 'Compare '+state.connected.grocery.size+' stores', icon('arrow',20));
+  cta.addEventListener('click',()=>{ if(state.basket.length===0){ toast('Add at least one item','bad'); return; } navigate('results'); });
+  wrap.appendChild(cta);
+}
+function addItemSheet(){
+  showSheet({title:'Add to basket', build:(sheet,close)=>{
+    ['Greek yogurt, 4-pack','Cheddar cheese block','Roma tomatoes, lb','Orange juice, 52oz','Paper towels, 6-pack','Chicken breast, 2 lb'].forEach(nm=>{
+      const r=el('div',{class:'lrow',style:'padding:13px 0'}, el('div',{style:'flex:1'},el('div',{class:'nm'},nm)), el('button',{class:'btn sm'},'Add'));
+      r.querySelector('button').addEventListener('click',()=>{ state.basket.push({name:nm,qty:1}); close(); toast('Added to basket','good'); renderScreen(); });
+      sheet.appendChild(r);
+    });
+  }});
+}
 function locationSheet(which){
   showSheet({title:which==='from'?'Set pickup':'Where to?', build:(sheet,close)=>{
-    const inp=el('input',{class:'',placeholder:'Search address or place',style:'width:100%;font-family:var(--font);font-size:16px;font-weight:600;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--ink);outline:none'});
-    sheet.appendChild(inp);
-    const opts=which==='from'
-      ? [['📍','Current location','GPS'],['🏠','Home','123 Pine St'],['💼','Work','Salesforce Tower']]
-      : [['🏠','Home','123 Pine St'],['💼','Work','Salesforce Tower'],['✈️','SFO Airport','International Terminal'],['☕','Blue Bottle','66 Mint St']];
-    const listWrap=el('div',{style:'margin-top:8px'});
-    opts.forEach(([ic,t,d])=>{
-      const r=el('div',{class:'result',style:'padding:14px 4px'});
-      r.appendChild(el('div',{class:'appicon',style:'background:var(--primary-tint);color:var(--primary);width:38px;height:38px;font-size:16px'},ic));
-      const m=el('div',{style:'flex:1'}); m.appendChild(el('div',{style:'font-weight:700'},t)); m.appendChild(el('div',{style:'color:var(--muted);font-size:13px'},d));
-      r.appendChild(m);
-      r.addEventListener('click',()=>{ state[which]= t==='Current location'?'Current location':t; close(); renderScreen(); });
-      listWrap.appendChild(r);
-    });
-    sheet.appendChild(listWrap);
-    setTimeout(()=>inp.focus(),80);
+    sheet.appendChild(el('div',{class:'field card',style:'margin-bottom:8px'}, icon('search',20,'color:var(--muted)'), el('div',{class:'val ph'},'Search address or place')));
+    const opts=which==='from'?[['locate','Current location','GPS'],['home','Home','123 Pine St'],['user','Work','Salesforce Tower']]:[['home','Home','123 Pine St'],['user','Work','Salesforce Tower'],['pin','SFO Airport','International Terminal'],['store','Blue Bottle','66 Mint St']];
+    opts.forEach(([ic,t,d])=>{ const r=el('div',{class:'lrow',style:'padding:13px 4px'}, el('div',{class:'plogo',style:'width:38px;height:38px;background:var(--violet-tint);color:var(--violet)'},icon(ic,20)), el('div',{style:'flex:1'},el('div',{class:'nm'},t),el('div',{class:'ds'},d))); r.addEventListener('click',()=>{ state[which]= t==='Current location'?'Current location':t; close(); renderScreen(); }); sheet.appendChild(r); });
   }});
 }
 
-/* ----- Results / compare (hero) ----- */
-screens.results={title:'Results',tab:'search',back:true,render(){
+/* results (category-aware) */
+screens.results={tab:'home',back:true,render(){
+  const cat=CATEGORIES[state.category];
   const wrap=el('div',{class:'pad'});
-  // trip header
-  wrap.appendChild(el('div',{class:'label'},'Comparing'));
-  wrap.appendChild(el('div',{style:'font-weight:800;font-size:18px;margin:2px 0 16px'}, (state.from||'Pickup')+'  →  '+(state.to||'Destination')));
-
+  if(cat.kind==='route'){
+    wrap.appendChild(el('div',{class:'label'},'Comparing'));
+    wrap.appendChild(el('div',{style:'font-weight:700;font-size:17px;margin:3px 0 16px;letter-spacing:-.02em'}, (state.from||'Pickup')+'  →  '+(state.to||'Destination')));
+  }else{
+    const items=state.basket.reduce((a,b)=>a+b.qty,0);
+    wrap.appendChild(el('div',{class:'label'},'Comparing'));
+    wrap.appendChild(el('div',{style:'font-weight:700;font-size:17px;margin:3px 0 16px;letter-spacing:-.02em'}, items+' items across your connected stores'));
+  }
   if(state.resultsPhase==='loading'){
-    const box=el('div',{class:'card'});
-    ['Uber','Lyft'].forEach((n,i)=>{
-      box.appendChild(el('div',{class:'comparing'+(i?'':'')},
-        el('div',{class:'spinner'}),
-        el('div',{style:'font-weight:600'},'Checking '+n+'…')));
-      if(i===0) box.appendChild(el('div',{class:'divider'}));
-    });
+    const box=el('div',{class:'card'}); const conn=[...state.connected[state.category]];
+    conn.forEach((id,i)=>{ box.appendChild(el('div',{class:'comparing'}, el('div',{class:'spinner'}), plogo(id,26), el('div',{style:'font-weight:600'},'Checking '+LOGOS[id].name+'…'))); if(i<conn.length-1) box.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
     wrap.appendChild(box);
-    wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:16px'},'Jedi is reading live prices from your apps…'));
+    wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:16px'},'Reading live prices from your apps…'));
     return wrap;
   }
-
-  // loaded
-  wrap.appendChild(el('div',{class:'banner pop'},
-    el('span',{style:'font-size:20px'},'💸'),
-    el('span',{},'Cheapest is UberX — you save $9.60 vs the priciest option')));
-
-  const data=[
-    {prov:'uber',type:'UberX',price:'$18.40',eta:'4 min away',best:true},
-    {prov:'lyft',type:'Lyft',price:'$19.10',eta:'3 min away'},
-    {prov:'uber',type:'Uber Comfort',price:'$24.70',eta:'6 min away',surge:'1.4×'},
-    {prov:'lyft',type:'Lyft XL',price:'$28.00',eta:'5 min away'},
-  ];
-  const card=el('div',{class:'card',style:'margin-top:16px'});
-  data.forEach((d,i)=>{
-    const p=PROVIDERS[d.prov];
-    const r=el('div',{class:'result'});
-    r.appendChild(el('div',{class:'appicon',style:'background:'+p.color+';width:40px;height:40px;font-size:15px'},p.initial));
-    const mid=el('div',{style:'flex:1;min-width:0'});
-    const titleRow=el('div',{class:'row',style:'gap:8px'}); titleRow.appendChild(el('span',{style:'font-weight:700;font-size:15px'},d.type));
-    if(d.best) titleRow.appendChild(el('span',{class:'badge best'},'BEST VALUE'));
-    if(d.surge) titleRow.appendChild(el('span',{class:'badge surge'},'⚡ '+d.surge+' surge'));
-    mid.appendChild(titleRow);
-    mid.appendChild(el('div',{style:'color:var(--muted);font-size:13px;margin-top:2px'},d.eta));
-    r.appendChild(mid);
-    r.appendChild(el('div',{class:'price'+(d.best?'':''),style:d.best?'color:var(--savings)':''},d.price));
-    r.addEventListener('click',()=>rideDetail(d));
-    card.appendChild(r);
-    card.appendChild(el('div',{class:'divider'}));
-  });
-  // failure row (per-provider scrape fail branch)
-  const failR=el('div',{class:'result',style:'cursor:default'});
-  failR.appendChild(el('div',{class:'appicon',style:'background:#FF00BF;width:40px;height:40px;font-size:15px;opacity:.5'},'L'));
-  const fm=el('div',{style:'flex:1'}); fm.appendChild(el('div',{class:'row',style:'gap:8px'},el('span',{style:'font-weight:700;font-size:15px'},'Lyft Lux'),el('span',{class:'badge fail'},'COULDN’T FETCH')));
-  fm.appendChild(el('div',{style:'color:var(--muted);font-size:13px'},'Price unavailable right now'));
-  failR.appendChild(fm);
-  const retry=el('button',{class:'btn sm secondary',style:'width:auto'},'Retry');
-  retry.addEventListener('click',()=>toast('Retrying Lyft Lux…'));
-  failR.appendChild(retry);
-  card.appendChild(failR);
-  wrap.appendChild(card);
-
-  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:12.5px'},'Prices read live from your apps moments ago. Tap one to book.'));
+  if(cat.kind==='route') renderRidesResults(wrap); else renderGroceryResults(wrap);
   return wrap;
 }};
 
+function renderRidesResults(wrap){
+  const conn=CATEGORIES.rides.providers.filter(id=>state.connected.rides.has(id));
+  const priced=conn.map(id=>({id,...RIDE_PRICES[id]})).sort((a,b)=>a.price-b.price);
+  if(priced.length>=2){ const save=(priced[priced.length-1].price-priced[0].price); wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},'Cheapest is '+priced[0].type+' — you save '+money(save)+' vs the priciest'))); }
+  const card=el('div',{class:'card',style:'margin-top:16px'});
+  priced.forEach((d,i)=>{
+    const r=el('div',{class:'lrow',style:'cursor:pointer'}); r.appendChild(plogo(d.id,42));
+    const mid=el('div',{style:'flex:1;min-width:0'}); const tr=el('div',{class:'row',style:'gap:7px'}); tr.appendChild(el('span',{class:'nm'},d.type)); if(i===0) tr.appendChild(el('span',{class:'badge best'},'BEST VALUE')); if(d.surge) tr.appendChild(el('span',{class:'badge warn'},icon('bolt',12),d.surge)); if(d.tag) tr.appendChild(el('span',{class:'badge accent'},d.tag)); mid.appendChild(tr); mid.appendChild(el('div',{class:'ds'},d.eta+' away')); r.appendChild(mid);
+    r.appendChild(el('div',{class:'price',style:i===0?'color:var(--savings)':''},money(d.price)));
+    r.addEventListener('click',()=>rideDetail(d)); card.appendChild(r); card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
+  });
+  // unconnected upsell rows
+  CATEGORIES.rides.providers.filter(id=>!state.connected.rides.has(id)).forEach(id=>{ const r=el('div',{class:'lrow'}); r.appendChild(el('div',{style:'opacity:.5'},plogo(id,42))); r.appendChild(el('div',{style:'flex:1'},el('div',{class:'nm'},LOGOS[id].name),el('div',{class:'ds'},'Connect to compare'))); const b=el('button',{class:'btn sm secondary'},'Connect'); b.addEventListener('click',()=>connectFlow(id)); r.appendChild(b); card.appendChild(r); card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  // a failed fetch example
+  const fr=el('div',{class:'lrow'}); fr.appendChild(el('div',{style:'opacity:.55'},plogo('lyft',42))); fr.appendChild(el('div',{style:'flex:1'},el('div',{class:'row',style:'gap:7px'},el('span',{class:'nm'},'Lyft XL'),el('span',{class:'badge fail'},'COULDN’T FETCH')),el('div',{class:'ds'},'Price unavailable right now'))); const rb=el('button',{class:'btn sm secondary'},'Retry'); rb.addEventListener('click',()=>toast('Retrying Lyft XL…')); fr.appendChild(rb); card.appendChild(fr);
+  wrap.appendChild(card);
+  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:12.5px'},'Prices read live from your apps moments ago. Tap an option to book.'));
+}
 function rideDetail(d){
-  const p=PROVIDERS[d.prov];
+  const p=LOGOS[d.id];
   showSheet({build:(sheet,close)=>{
-    sheet.appendChild(el('div',{class:'row',style:'gap:14px;margin-bottom:6px'},
-      el('div',{class:'appicon',style:'background:'+p.color},p.initial),
-      el('div',{},el('div',{style:'font-weight:800;font-size:18px'},d.type),el('div',{style:'color:var(--muted);font-size:13px'},p.name+' · '+d.eta))));
-    sheet.appendChild(el('div',{class:'row',style:'margin:14px 0'},
-      el('div',{class:'price',style:'font-size:30px'+(d.best?';color:var(--savings)':'')},d.price),
-      el('div',{class:'spacer'}),
-      d.best?el('span',{class:'badge best'},'BEST VALUE'):el('span',{})));
-    if(d.surge) sheet.appendChild(el('div',{class:'banner',style:'background:var(--warn-tint);color:#B45309;margin-bottom:14px'},el('span',{},'⚡'),el('span',{},'Surge pricing is active ('+d.surge+'). Price may change in '+p.name+'.')));
-    sheet.appendChild(el('div',{class:'sub',style:'font-size:13px'},'Jedi opens '+p.name+' with this trip pre-filled. You confirm and pay in '+p.name+' as usual.'));
-
-    const book=el('button',{class:'btn'},'Book on '+p.name+'  →');
-    book.addEventListener('click',()=>{
-      if(!p.installed){ // deeplink fallback branch
-        close();
-        showAlert({title:p.name+' isn’t installed',body:'Open this trip in your browser instead?',
-          actions:[{label:'Cancel',kind:'secondary'},{label:'Open web',kind:'primary',onClick:()=>toast('Opening '+p.name+' on the web…')}]});
-        return;
-      }
-      close();
-      showAlert({title:'Opening '+p.name+'…',body:'Handing you off to '+p.name+' with the '+d.type+' trip pre-filled.',
-        actions:[{label:'Got it',kind:'primary',onClick:()=>toast('Handed off to '+p.name+' ✓','good')}]});
-    });
+    sheet.appendChild(el('div',{class:'row',style:'gap:13px;margin-bottom:6px'}, plogo(d.id,46), el('div',{}, el('div',{style:'font-weight:700;font-size:18px'},d.type), el('div',{class:'ds'},p.name+' · '+d.eta+' away'))));
+    sheet.appendChild(el('div',{class:'row',style:'margin:14px 0'}, el('div',{class:'price lg',style:'color:var(--savings)'},money(d.price)), el('div',{class:'spacer'})));
+    if(d.surge) sheet.appendChild(el('div',{class:'banner warn',style:'margin-bottom:14px'}, icon('bolt',18), el('span',{},'Surge pricing active ('+d.surge+'). Final price is confirmed in '+p.name+'.')));
+    sheet.appendChild(el('div',{class:'sub',style:'font-size:13.5px'},'Jedi opens '+p.name+' with this trip pre-filled. You confirm and pay in '+p.name+' as usual.'));
+    const book=el('button',{class:'btn'}, 'Book on '+p.name, icon('arrow',20));
+    book.addEventListener('click',()=>{ if(!p.installed){ close(); showAlert({title:p.name+' isn’t installed',body:'Open this trip in your browser instead?',actions:[{label:'Cancel',kind:'secondary'},{label:'Open web',kind:'primary',onClick:()=>toast('Opening '+p.name+' on the web…')}]}); return; } close(); showAlert({title:'Opening '+p.name+'…',body:'Handing you off to '+p.name+' with the '+d.type+' trip pre-filled.',actions:[{label:'Got it',kind:'primary',onClick:()=>toast('Handed off to '+p.name,'good')}]}); });
     sheet.appendChild(book);
   }});
 }
 
-/* ----- placeholders for not-yet-built tabs ----- */
-function placeholder(title,note){
-  return {title,tab:title.toLowerCase(),back:false,render(){
-    const w=el('div',{class:'placeholder'});
-    w.appendChild(el('div',{class:'appicon',style:'background:var(--primary-tint);color:var(--primary)'},'⏳'));
-    w.appendChild(el('div',{class:'h1',style:'font-size:20px'},title));
-    w.appendChild(el('div',{class:'sub'},note));
-    return w;
-  }};
+function renderGroceryResults(wrap){
+  const conn=CATEGORIES.grocery.providers.filter(id=>state.connected.grocery.has(id));
+  const priced=conn.map(id=>({id,...GROCERY_STORES[id]})).sort((a,b)=>(a.total+a.fee)-(b.total+b.fee));
+  if(priced.length>=2){ const save=((priced[priced.length-1].total+priced[priced.length-1].fee)-(priced[0].total+priced[0].fee)); wrap.appendChild(el('div',{class:'banner fade'}, icon('trendDown',20), el('span',{},'Cheapest basket is '+LOGOS[priced[0].id].name+' — you save '+money(save)+' all-in'))); }
+  const card=el('div',{class:'card',style:'margin-top:16px'});
+  priced.forEach((s,i)=>{
+    const r=el('div',{class:'lrow',style:'cursor:pointer'}); r.appendChild(plogo(s.id,42));
+    const mid=el('div',{style:'flex:1;min-width:0'}); const tr=el('div',{class:'row',style:'gap:7px'}); tr.appendChild(el('span',{class:'nm'},LOGOS[s.id].name)); if(i===0) tr.appendChild(el('span',{class:'badge best'},'CHEAPEST')); if(s.avail<12) tr.appendChild(el('span',{class:'badge warn'},(12-s.avail)+' missing')); mid.appendChild(tr); mid.appendChild(el('div',{class:'ds'}, (s.fee===0?'Free delivery':money(s.fee)+' delivery')+' · '+s.avail+'/12 items')); r.appendChild(mid);
+    const pr=el('div',{style:'text-align:right'}); pr.appendChild(el('div',{class:'price',style:i===0?'color:var(--savings)':''},money(s.total+s.fee))); pr.appendChild(el('div',{class:'ds'},'all-in')); r.appendChild(pr);
+    r.addEventListener('click',()=>storeDetail(s)); card.appendChild(r); card.appendChild(el('div',{class:'divider',style:'margin:0 16px'}));
+  });
+  CATEGORIES.grocery.providers.filter(id=>!state.connected.grocery.has(id)).forEach(id=>{ const r=el('div',{class:'lrow'}); r.appendChild(el('div',{style:'opacity:.5'},plogo(id,42))); r.appendChild(el('div',{style:'flex:1'},el('div',{class:'nm'},LOGOS[id].name),el('div',{class:'ds'},'Connect to compare'))); const b=el('button',{class:'btn sm secondary'},'Connect'); b.addEventListener('click',()=>connectFlow(id)); r.appendChild(b); card.appendChild(r); if(id!==CATEGORIES.grocery.providers[CATEGORIES.grocery.providers.length-1]) card.appendChild(el('div',{class:'divider',style:'margin:0 16px'})); });
+  wrap.appendChild(card);
+  wrap.appendChild(el('div',{class:'sub',style:'text-align:center;margin-top:14px;font-size:12.5px'},'Totals include your basket + delivery. Tap a store for the item-by-item breakdown.'));
 }
+function storeDetail(s){
+  const name=LOGOS[s.id].name;
+  showSheet({build:(sheet,close)=>{
+    sheet.appendChild(el('div',{class:'row',style:'gap:13px;margin-bottom:14px'}, plogo(s.id,46), el('div',{}, el('div',{style:'font-weight:700;font-size:18px'},name), el('div',{class:'ds'},(s.fee===0?'Free delivery':money(s.fee)+' delivery')+' · '+s.avail+'/12 items'))));
+    // item-by-item (fabricated but consistent)
+    const unit=s.total/12; const items=state.basket.slice(0,5);
+    const list=el('div',{class:'card'}); items.forEach((it,idx)=>{ const missing=(s.avail<12 && idx>=s.avail-7 && idx<(s.avail-7)+(12-s.avail)); const r=el('div',{class:'lrow',style:'padding:12px 14px'}); r.appendChild(el('div',{style:'flex:1'},el('div',{class:'nm',style:'font-size:14px'},it.name), missing?el('div',{class:'ds',style:'color:var(--warn)'},'Out of stock'):null)); r.appendChild(el('div',{class:'price',style:'font-size:15px'+(missing?';opacity:.4;text-decoration:line-through':'')}, money(unit*(0.7+idx*0.15)))); list.appendChild(r); if(idx<items.length-1) list.appendChild(el('div',{class:'divider',style:'margin:0 14px'})); });
+    sheet.appendChild(list);
+    const tot=el('div',{class:'row',style:'margin:16px 2px 14px'}); tot.appendChild(el('div',{style:'font-weight:600'},'Total (incl. delivery)')); tot.appendChild(el('div',{class:'spacer'})); tot.appendChild(el('div',{class:'price'},money(s.total+s.fee))); sheet.appendChild(tot);
+    const order=el('button',{class:'btn'}, 'Order on '+name, icon('arrow',20));
+    order.addEventListener('click',()=>{ const p=LOGOS[s.id]; if(!p.installed){ close(); showAlert({title:name+' isn’t installed',body:'Open your basket in '+name+' on the web?',actions:[{label:'Cancel',kind:'secondary'},{label:'Open web',kind:'primary',onClick:()=>toast('Opening '+name+' on the web…')}]}); return; } close(); showAlert({title:'Opening '+name+'…',body:'Handing you off to '+name+' with your basket pre-filled. You review and pay in '+name+'.',actions:[{label:'Got it',kind:'primary',onClick:()=>toast('Handed off to '+name,'good')}]}); });
+    sheet.appendChild(order);
+  }});
+}
+
+/* placeholders */
+function placeholder(title,note){ return {tab:title.toLowerCase(),back:false,render(){ const w=el('div',{class:'empty'}); w.appendChild(icon(title==='Earn'?'bolt':'user',40)); w.appendChild(el('div',{class:'h'},title)); w.appendChild(el('div',{class:'sub'},note)); return w; }}; }
 screens.earn=placeholder('Earn','Points wallet, background earner & boosts — building in Checkpoint 2.');
 screens.account=placeholder('Account','Profile, connected apps & settings — building in Checkpoint 2.');
 
-/* =========================================================================
-   Router + chrome
-   ========================================================================= */
-const TABS=[
-  {id:'search',label:'Search',icon:'🔍'},
-  {id:'earn',label:'Earn',icon:'✨'},
-  {id:'account',label:'Account',icon:'👤'},
-];
+/* ============================ router + chrome ============================ */
+const TABS=[{id:'home',label:'Home',icon:'home'},{id:'earn',label:'Earn',icon:'bolt'},{id:'account',label:'Account',icon:'user'}];
 function renderTabbar(){
-  const bar=document.getElementById('tabbar');
-  const activeTab=screens[state.screen].tab;
-  if(!activeTab){ bar.style.display='none'; return; }
+  const bar=document.getElementById('tabbar'); const at=screens[state.screen].tab;
+  if(!at){ bar.style.display='none'; return; }
   bar.style.display='flex'; bar.innerHTML='';
-  TABS.forEach(t=>{
-    const b=el('button',{class:'tab'+(t.id===activeTab?' active':'')},
-      el('span',{class:'icon',style:'font-size:20px'},t.icon), t.label);
-    b.addEventListener('click',()=>navigate(t.id==='search'?'search':t.id));
-    bar.appendChild(b);
-  });
+  TABS.forEach(t=>{ const b=el('button',{class:'tab'+(t.id===at?' active':'')}, icon(t.icon,22), t.label); b.addEventListener('click',()=>navigate(t.id==='home'?'home':t.id)); bar.appendChild(b); });
 }
-function renderScreen(){
-  const s=screens[state.screen];
-  const scr=document.getElementById('screen');
-  scr.innerHTML=''; scr.scrollTop=0;
-  scr.appendChild(s.render());
-  renderTabbar();
-  document.getElementById('jump').value=state.screen;
-}
-function navigate(id){
-  if(!screens[id]) return;
-  state.screen=id;
-  if(id==='results'){ // simulate live scraping then results
-    state.resultsPhase='loading'; renderScreen();
-    setTimeout(()=>{ if(state.screen==='results'){ state.resultsPhase='loaded'; renderScreen(); } },1300);
-    return;
-  }
-  renderScreen();
-}
+function renderScreen(){ const s=screens[state.screen]; const scr=document.getElementById('screen'); scr.innerHTML=''; scr.scrollTop=0; scr.appendChild(s.render()); renderTabbar(); syncJump(); }
+function navigate(id){ if(!screens[id]) return; state.screen=id; if(id==='results'){ state.resultsPhase='loading'; renderScreen(); setTimeout(()=>{ if(state.screen==='results'){ state.resultsPhase='loaded'; renderScreen(); } },1300); return; } renderScreen(); }
 
-/* jump menu */
-const JUMP=[['connect','① Connect apps'],['search','② Home / Search'],['results','③ Results / compare'],['earn','— Earn (Checkpoint 2)'],['account','— Account (Checkpoint 2)']];
+/* jump menu (category-aware) */
+const JUMP=[['rides|connect','Rides · Connect'],['rides|home','Rides · Home'],['rides|results','Rides · Results'],['grocery|connect','Grocery · Connect'],['grocery|home','Grocery · Home'],['grocery|results','Grocery · Results'],['rides|earn','Earn (Checkpoint 2)'],['rides|account','Account (Checkpoint 2)']];
 const jump=document.getElementById('jump');
 JUMP.forEach(([v,l])=>jump.appendChild(el('option',{value:v},l)));
-jump.addEventListener('change',e=>navigate(e.target.value));
+jump.addEventListener('change',e=>{ const [cat,scr]=e.target.value.split('|'); state.category=cat; navigate(scr); });
+function syncJump(){ jump.value=state.category+'|'+state.screen; }
 
-/* toolbar tools */
-document.querySelector('.toolbar').addEventListener('click',e=>{
-  const b=e.target.closest('[data-tool]'); if(!b) return;
-  const t=b.dataset.tool;
-  if(t==='dark'){ state.dark=!state.dark; document.body.classList.toggle('dark',state.dark); b.textContent=state.dark?'☀️ Light':'🌙 Dark'; }
-  if(t==='reset'){ state.connected.clear(); state.to=''; state.from='Current location'; navigate('connect'); toast('Prototype reset'); }
+/* toolbar */
+document.querySelector('.toolbar').addEventListener('click',e=>{ const b=e.target.closest('[data-tool]'); if(!b) return; const t=b.dataset.tool;
+  if(t==='dark'){ state.dark=!state.dark; document.body.classList.toggle('dark',state.dark); b.textContent=state.dark?'Light':'Dark'; }
+  if(t==='reset'){ state.connected.rides.clear(); state.connected.grocery.clear(); state.to=''; state.basket=DEFAULT_BASKET.map(x=>({...x})); state.category='rides'; navigate('connect'); toast('Prototype reset'); }
   if(t==='map'){ document.getElementById('map').classList.toggle('show'); }
 });
-document.getElementById('map').addEventListener('click',e=>{
-  const b=e.target.closest('[data-tool="map"]'); if(b){ document.getElementById('map').classList.remove('show'); }
-});
+document.getElementById('map').addEventListener('click',e=>{ if(e.target.closest('[data-tool="map"]')) document.getElementById('map').classList.remove('show'); });
 
-/* build flow-map overlay body */
+/* flow-map overlay */
 const MAP=[
   ['A · Onboarding & Auth',[['Splash + version gate',0],['Value-prop intro',0],['Google sign-in',0]]],
-  ['B · Connect & permissions',[['How Jedi works',0],['Privacy & terms',0],['Connect apps',1,'connect'],['Permission disclosure',1,'connect'],['Notifications opt-in',0],['Setup complete',0]]],
-  ['C · Compare flow',[['Home / Search',1,'search'],['Location autocomplete',1,'search'],['Comparing…',1,'results'],['Results compare',1,'results'],['Ride detail',1,'results'],['Book hand-off',1,'results']]],
-  ['D · Earner / points',[['Points wallet',0],['Background earner',0],['Boost nudge',0],['Redeem',0]]],
-  ['E · Account / system',[['Profile',0],['Connected apps',0],['Settings',0],['Notifications',0],['Help / legal',0]]],
-  ['F · Global alerts',[['Offline',0],['Session expired',0],['Login expired',0],['Accessibility revoked',0],['Force update',0],['Surge warning',1,'results'],['Deeplink fallback',1,'results']]],
+  ['B · Category & connect',[['Category select',1,'rides|connect'],['Connect — Rides',1,'rides|connect'],['Connect — Grocery',1,'grocery|connect'],['Permission disclosure',1,'rides|connect'],['Privacy & terms',0],['Notifications opt-in',0]]],
+  ['C · Rides compare',[['Rides Home',1,'rides|home'],['Location autocomplete',1,'rides|home'],['Comparing',1,'rides|results'],['Rides Results',1,'rides|results'],['Ride detail',1,'rides|results'],['Book hand-off',1,'rides|results']]],
+  ['D · Grocery compare',[['Grocery Home (basket)',1,'grocery|home'],['Add item',1,'grocery|home'],['Grocery Results',1,'grocery|results'],['Store detail',1,'grocery|results'],['Order hand-off',1,'grocery|results']]],
+  ['E · Earner / points',[['Points wallet',0],['Background earner',0],['Boost nudge',0],['Redeem',0]]],
+  ['F · Account / system',[['Profile',0],['Connected apps',0],['Settings',0],['Help / legal',0]]],
+  ['G · Global alerts',[['Offline',0],['Session expired',0],['Login expired',0],['Accessibility revoked',0],['Surge warning',1,'rides|results'],['Out of stock',1,'grocery|results'],['Deeplink fallback',1,'rides|results']]],
 ];
 const mapBody=document.getElementById('map-body');
-MAP.forEach(([grp,nodes])=>{
-  mapBody.appendChild(el('div',{class:'grp'},grp));
-  const row=el('div',{});
-  nodes.forEach(([name,live,target])=>{
-    const n=el('div',{class:'node '+(live?'live':'todo')},name);
-    if(live&&target) n.addEventListener('click',()=>{document.getElementById('map').classList.remove('show');navigate(target);});
-    row.appendChild(n);
-  });
-  mapBody.appendChild(row);
-});
+MAP.forEach(([grp,nodes])=>{ mapBody.appendChild(el('div',{class:'grp'},grp)); const row=el('div',{}); nodes.forEach(([nm,live,target])=>{ const n=el('div',{class:'node '+(live?'live':'todo')},nm); if(live&&target) n.addEventListener('click',()=>{ document.getElementById('map').classList.remove('show'); const [cat,scr]=target.split('|'); state.category=cat; navigate(scr); }); row.appendChild(n); }); mapBody.appendChild(row); });
 
-/* live clock */
+/* chrome glyphs */
+document.getElementById('brandmark').appendChild(el('span',{class:'plogo',style:'width:20px;height:20px;background:var(--violet);color:#fff;border-radius:6px'}, icon('trendDown',13)));
+document.getElementById('statusicons').appendChild(icon('bell',13)); document.getElementById('statusicons').appendChild(el('span',{},'100%'));
 function tick(){ const d=new Date(); document.getElementById('clock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 setInterval(tick,10000); tick();
 
-/* boot */
 navigate('connect');
 </script>
 </body>
